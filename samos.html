@@ -530,77 +530,6 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
 }
 
-.browser-bookmarks {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px;
-  min-height: 26px;
-  padding: 2px 8px 4px;
-  background: linear-gradient(180deg, #ececec 0%, #dedede 100%);
-  border-bottom: 1px solid rgba(0,0,0,0.18);
-  flex-shrink: 0;
-  position: relative;
-  z-index: 6;
-}
-.bm-folder-wrap { position: relative; }
-.bm-folder-btn {
-  height: 22px;
-  padding: 0 10px;
-  font-size: 11px;
-  border: 1px solid rgba(0,0,0,0.22);
-  border-radius: 4px;
-  background: linear-gradient(180deg, #fafafa, #e8e8e8);
-  cursor: pointer;
-  color: #222;
-  font-family: inherit;
-}
-.bm-folder-btn:hover { filter: brightness(1.03); }
-.bm-caret { font-size: 9px; opacity: 0.65; margin-left: 2px; }
-.bm-folder-dd {
-  display: none;
-  position: absolute;
-  top: calc(100% + 2px);
-  left: 0;
-  min-width: 200px;
-  max-height: 320px;
-  overflow-y: auto;
-  background: rgba(252,252,252,0.98);
-  border: 1px solid rgba(0,0,0,0.22);
-  border-radius: 6px;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.22);
-  z-index: 300;
-}
-.bm-folder-dd.open { display: block; }
-.bm-dd-item {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 7px 14px;
-  font-size: 12px;
-  border: none;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  background: transparent;
-  cursor: pointer;
-  color: #222;
-  font-family: inherit;
-}
-.bm-dd-item:last-child { border-bottom: none; }
-.bm-dd-item:hover { background: #4a90d9; color: #fff; }
-.bm-item-resume {
-  height: 22px;
-  padding: 0 11px;
-  font-size: 11px;
-  margin-left: 2px;
-  border: 1px solid rgba(0,0,0,0.22);
-  border-radius: 4px;
-  background: linear-gradient(180deg, #fffaf5, #f5ebe0);
-  cursor: pointer;
-  color: #333;
-  font-family: inherit;
-}
-.bm-item-resume:hover { filter: brightness(1.04); }
-
 .browser-tabs {
   height: 24px;
   background: linear-gradient(180deg, #d4d4d4 0%, #c0c0c0 100%);
@@ -1523,13 +1452,13 @@ const DESKTOP_ITEMS = [
   },
   {
     id: 'infinite-array',
-    name: 'Infinite Array',
-    emoji: '🔁',
+    name: 'Fruit World',
+    emoji: '🍎',
     color: 'linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%)',
     type: 'Generative',
     tags: ['GitHub: ambient2'],
-    finderTerms: 'infinite array ambient pattern loop fruit stack',
-    desc: 'Infinite Array / Fruit stack — github.com/sambrott/ambient2.',
+    finderTerms: 'fruit world infinite array ambient pattern loop fruit stack',
+    desc: 'Fruit World — generative fruit stack (github.com/sambrott/ambient2).',
     action: 'samium',
     url: 'https://fruit-world-eight.vercel.app/'
   },
@@ -1652,10 +1581,6 @@ const PHOTOS_ALBUMS = [
 
 const SAMIUM_ID = 'samium';
 const SAMIUM_SOCIAL_ID = 'samium-social';
-/** Résumé PDF (same as dock). Bookmarks open the desktop document window. */
-const SAMIUM_RESUME_PDF_URL = 'https://www.sambrott.com/portfolio%20site%20assets/Resume%202026.pdf';
-/** Replace with your Upwork profile URL (profile page → copy from address bar). */
-const SAMIUM_BOOKMARK_UPWORK_URL = 'https://www.upwork.com/nx/search/talent/?q=Sam%20Brott';
 const samiumStates = {};
 function ensureSamiumState(winId) {
   if (!samiumStates[winId]) {
@@ -2027,7 +1952,6 @@ function samiumWindowInnerHtml(winId) {
           onkeydown="if(event.key==='Enter')samiumGo(${w})" />
         <button type="button" class="go-btn" onclick="samiumGo(${w})">Go</button>
       </div>
-      <div class="browser-bookmarks sam-bookmarks" data-sam-bm-win="${winId}"></div>
       <div class="browser-loading sam-loading"></div>
       <div class="browser-body sam-browser-body"></div>
     </div>
@@ -2124,83 +2048,6 @@ function samiumWireTabStrip(winId) {
     }
     const cell = e.target.closest('[data-sam-tab]');
     if (cell) samiumSwitchTab(+cell.dataset.samTab, winId);
-  });
-}
-
-function samiumCloseAllBookmarkDropdowns() {
-  document.querySelectorAll('.bm-folder-dd.open').forEach(dd => dd.classList.remove('open'));
-}
-
-let _samiumBookmarkDocCloseWired = false;
-function samiumWireBookmarkDocCloseOnce() {
-  if (_samiumBookmarkDocCloseWired) return;
-  _samiumBookmarkDocCloseWired = true;
-  document.addEventListener('click', () => samiumCloseAllBookmarkDropdowns());
-}
-
-function samiumBookmarkSocialEntries() {
-  return [
-    { name: 'X', url: 'https://x.com/sam__brott', dockSocial: true },
-    { name: 'Instagram', url: 'https://www.instagram.com/sam.brott/', dockSocial: true },
-    { name: 'LinkedIn', url: 'https://www.linkedin.com/in/sam-brott-970828155/', dockSocial: true },
-    { name: 'Upwork', url: SAMIUM_BOOKMARK_UPWORK_URL, dockSocial: false },
-  ];
-}
-
-function samiumInitBookmarks(winId) {
-  const bar = samiumQ(winId, '.sam-bookmarks');
-  if (!bar || bar.dataset.samBmWired === '1') return;
-  bar.dataset.samBmWired = '1';
-  samiumWireBookmarkDocCloseOnce();
-
-  const projects = DESKTOP_ITEMS.filter(p => p.priority);
-  const microsites = DESKTOP_ITEMS.filter(p => !p.priority);
-
-  const folderHtml = (label, items) => {
-    const links = items.map(it => {
-      const enc = encodeURIComponent(it.url);
-      const ds = it.dockSocial ? ' data-bm-dock-social="1"' : '';
-      return `<button type="button" class="bm-dd-item" data-bm-url="${enc}"${ds}>${samiumEscapeAttr(it.name)}</button>`;
-    }).join('');
-    return `<div class="bm-folder-wrap">
-      <button type="button" class="bm-folder-btn">${samiumEscapeAttr(label)}<span class="bm-caret">▾</span></button>
-      <div class="bm-folder-dd">${links}</div>
-    </div>`;
-  };
-
-  bar.innerHTML =
-    folderHtml('Projects', projects.map(p => ({ name: p.name, url: p.url }))) +
-    folderHtml('Micro sites', microsites.map(p => ({ name: p.name, url: p.url }))) +
-    folderHtml('Socials', samiumBookmarkSocialEntries()) +
-    `<button type="button" class="bm-item-resume">${samiumEscapeAttr('Résumé')}</button>`;
-
-  bar.addEventListener('click', e => {
-    const fBtn = e.target.closest('.bm-folder-btn');
-    if (fBtn) {
-      e.stopPropagation();
-      const wrap = fBtn.closest('.bm-folder-wrap');
-      const dd = wrap && wrap.querySelector('.bm-folder-dd');
-      if (!dd) return;
-      const was = dd.classList.contains('open');
-      samiumCloseAllBookmarkDropdowns();
-      if (!was) dd.classList.add('open');
-      return;
-    }
-    const bItem = e.target.closest('.bm-dd-item');
-    if (bItem && bItem.dataset.bmUrl != null && bItem.dataset.bmUrl !== '') {
-      e.stopPropagation();
-      samiumCloseAllBookmarkDropdowns();
-      const url = decodeURIComponent(bItem.dataset.bmUrl);
-      const useDockSocial = bItem.dataset.bmDockSocial === '1';
-      if (useDockSocial && winId === SAMIUM_ID) openSamiumSocial(url);
-      else samiumNavigate(url, winId);
-      return;
-    }
-    if (e.target.closest('.bm-item-resume')) {
-      e.stopPropagation();
-      samiumCloseAllBookmarkDropdowns();
-      openDesktopResumePdf(SAMIUM_RESUME_PDF_URL);
-    }
   });
 }
 
@@ -2355,7 +2202,6 @@ function openSamium(initialUrl, openInNewTab, winId = SAMIUM_ID) {
   st.tabs = [{ history: [], historyIdx: -1, title: 'New Tab', panelEl: null }];
   st.activeTabIndex = 0;
   samiumWireTabStrip(winId);
-  samiumInitBookmarks(winId);
   samiumEnsurePanelForTab(winId, 0);
   samiumSyncPanelVisibility(winId);
   samiumRenderTabs(winId);
