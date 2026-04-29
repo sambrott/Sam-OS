@@ -1608,6 +1608,18 @@ const DESKTOP_ITEMS = [
     url: 'https://wheelspin-rho.vercel.app/'
   },
   {
+    id: 'nathan-birthday',
+    name: "Nathan's birthday",
+    emoji: '🎂',
+    color: 'linear-gradient(135deg, #fda4af 0%, #f0abfc 45%, #93c5fd 100%)',
+    type: 'Microsite',
+    tags: ['GitHub: nathan-birthday'],
+    finderTerms: 'nathan birthday happy birthday celebration',
+    desc: 'Happy Birthday Nathan — github.com/sambrott/nathan-birthday (GitHub Pages).',
+    action: 'samium',
+    url: 'https://sambrott.github.io/nathan-birthday/'
+  },
+  {
     id: 'portfolio',
     name: 'Portfolio',
     emoji: '💼',
@@ -2008,7 +2020,7 @@ function samiumNewTabPageHtml(winId) {
       <h2>Samium</h2>
       <p>The browser for Sam OS — built on WebKit, powered by curiosity</p>
       <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:320px;">
-        ${['forma.cool','overprint.design','sambrott.com','wikipedia.org','example.com'].map(u=>`<button class="btn btn-secondary" style="flex:none;width:auto;padding:0 12px;" onclick="samiumNavigate('https://${u}', ${w})">${u}</button>`).join('')}
+        ${['forma.cool','overprint.design','sambrott.com','sambrott.github.io/nathan-birthday','wikipedia.org','example.com'].map(u=>`<button class="btn btn-secondary" style="flex:none;width:auto;padding:0 12px;" onclick="samiumNavigate('https://${u}', ${w})">${u}</button>`).join('')}
       </div>
     </div>
   `;
