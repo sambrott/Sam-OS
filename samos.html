@@ -254,30 +254,26 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
 .desktop-icon.selected { background: rgba(100,150,255,0.4); }
 
 .icon-img {
-  width: 72px; height: 72px;
-  border-radius: 15px;
+  width: 72px; min-height: 72px;
+  border-radius: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 39px;
-  box-shadow:
-    0 4px 12px rgba(0,0,0,0.4),
-    0 1px 0 rgba(255,255,255,0.5) inset,
-    0 -1px 0 rgba(0,0,0,0.2) inset;
+  font-size: 52px;
+  line-height: 1;
+  background: transparent;
+  box-shadow: none;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
 }
 .icon-img::after {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 50%;
-  background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent);
-  border-radius: 15px 15px 0 0;
+  display: none;
 }
 
 .icon-img > svg.icon-fridge {
   position: relative;
   z-index: 1;
-  width: 40px;
-  height: 50px;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+  width: 52px;
+  height: 65px;
 }
 .project-header svg.icon-fridge {
   position: relative;
@@ -3401,7 +3397,7 @@ function renderDesktopIcons() {
       ? `<div class="icon-label-row"><span class="icon-priority-dot" title="Featured" aria-hidden="true"></span><div class="icon-label">${p.name}</div></div>`
       : `<div class="icon-label">${p.name}</div>`;
     icon.innerHTML = `
-      <div class="icon-img" style="background:${p.color}">${desktopItemIconMarkup(p)}</div>
+      <div class="icon-img">${desktopItemIconMarkup(p)}</div>
       ${labelHtml}
     `;
     icon.addEventListener('mousedown', e => {
