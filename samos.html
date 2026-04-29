@@ -2140,10 +2140,10 @@ function samiumWireBookmarkDocCloseOnce() {
 
 function samiumBookmarkSocialEntries() {
   return [
-    { name: 'X', url: 'https://x.com/sam__brott', dockSocial: true },
-    { name: 'Instagram', url: 'https://www.instagram.com/sam.brott/', dockSocial: true },
-    { name: 'LinkedIn', url: 'https://www.linkedin.com/in/sam-brott-970828155/', dockSocial: true },
-    { name: 'Upwork', url: SAMIUM_BOOKMARK_UPWORK_URL, dockSocial: false },
+    { name: 'X', url: 'https://x.com/sam__brott' },
+    { name: 'Instagram', url: 'https://www.instagram.com/sam.brott/' },
+    { name: 'LinkedIn', url: 'https://www.linkedin.com/in/sam-brott-970828155/' },
+    { name: 'Upwork', url: SAMIUM_BOOKMARK_UPWORK_URL },
   ];
 }
 
@@ -2159,8 +2159,7 @@ function samiumInitBookmarks(winId) {
   const folderHtml = (label, items) => {
     const links = items.map(it => {
       const enc = encodeURIComponent(it.url);
-      const ds = it.dockSocial ? ' data-bm-dock-social="1"' : '';
-      return `<button type="button" class="bm-dd-item" data-bm-url="${enc}"${ds}>${samiumEscapeAttr(it.name)}</button>`;
+      return `<button type="button" class="bm-dd-item" data-bm-url="${enc}">${samiumEscapeAttr(it.name)}</button>`;
     }).join('');
     return `<div class="bm-folder-wrap">
       <button type="button" class="bm-folder-btn">${samiumEscapeAttr(label)}<span class="bm-caret">▾</span></button>
@@ -2191,15 +2190,13 @@ function samiumInitBookmarks(winId) {
       e.stopPropagation();
       samiumCloseAllBookmarkDropdowns();
       const url = decodeURIComponent(bItem.dataset.bmUrl);
-      const useDockSocial = bItem.dataset.bmDockSocial === '1';
-      if (useDockSocial && winId === SAMIUM_ID) openSamiumSocial(url);
-      else samiumNavigate(url, winId);
+      samiumOpenUrlInNewTab(url, winId);
       return;
     }
     if (e.target.closest('.bm-item-resume')) {
       e.stopPropagation();
       samiumCloseAllBookmarkDropdowns();
-      openDesktopResumePdf(SAMIUM_RESUME_PDF_URL);
+      samiumOpenUrlInNewTab(resumePdfEmbedUrl(SAMIUM_RESUME_PDF_URL), winId);
     }
   });
 }
