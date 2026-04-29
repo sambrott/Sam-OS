@@ -1,0 +1,3490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sam OS — Portfolio</title>
+<style>
+/* ===================== RESET & BASE ===================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-system, 'Lucida Grande', 'Helvetica Neue', sans-serif; user-select: none; }
+
+/* ===================== DESKTOP ===================== */
+#desktop {
+  width: 100vw; height: 100vh;
+  background: #1a2332;
+  background-image: url('samos-wallpaper.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Light vignette for icon labels + dock legibility (does not hide the landscape) */
+#desktop::after {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse 120% 100% at 50% 30%, transparent 20%, rgba(0,0,0,0.12) 100%);
+}
+
+/* ===================== MENUBAR ===================== */
+#menubar {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 22px;
+  background: linear-gradient(180deg,
+    rgba(230,230,230,0.97) 0%,
+    rgba(210,210,210,0.97) 50%,
+    rgba(190,190,190,0.97) 100%);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0,0,0,0.3);
+  display: flex; align-items: center;
+  z-index: 10000;
+  font-size: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  /* Linen texture effect */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      rgba(255,255,255,0.03) 1px,
+      rgba(255,255,255,0.03) 2px
+    ),
+    linear-gradient(180deg, rgba(230,230,230,0.97) 0%, rgba(190,190,190,0.97) 100%);
+}
+
+.menubar-apple {
+  width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; cursor: pointer;
+  padding: 0 8px;
+  transition: background 0.1s;
+}
+.menubar-apple:hover { background: rgba(0,0,0,0.12); }
+
+.menubar-item {
+  padding: 0 8px; height: 22px;
+  display: flex; align-items: center;
+  font-size: 12px; font-weight: 600; color: #1a1a1a;
+  cursor: pointer; border-radius: 3px;
+  transition: background 0.1s;
+}
+.menubar-item:hover { background: rgba(0,0,100,0.15); color: white; }
+
+.menubar-right {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 4px;
+  padding-right: 8px;
+}
+.menubar-right-item {
+  padding: 0 6px; height: 22px;
+  display: flex; align-items: center;
+  font-size: 11px; color: #333;
+  cursor: pointer; border-radius: 3px;
+}
+.menubar-right-item:hover { background: rgba(0,0,0,0.1); }
+
+#mb-clock { font-size: 11px; color: #222; font-weight: 500; }
+
+/* ===================== WINDOWS ===================== */
+.window {
+  position: absolute;
+  background: #ececec;
+  border-radius: 6px;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.6),
+    0 0 0 0.5px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.8);
+  min-width: 300px; min-height: 200px;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  z-index: 100;
+  transition: box-shadow 0.15s;
+  animation: windowOpen 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.window.active {
+  box-shadow:
+    0 30px 80px rgba(0,0,0,0.7),
+    0 0 0 0.5px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.9);
+}
+.window.inactive .titlebar { background: linear-gradient(180deg, #d4d4d4 0%, #c0c0c0 100%); }
+.window.inactive .titlebar-title { color: #aaa; }
+.window.inactive .traffic-light { filter: grayscale(1) brightness(1.3); }
+
+@keyframes windowOpen {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Titlebar */
+.titlebar {
+  height: 22px;
+  background: linear-gradient(180deg,
+    #e0e0e0 0%, #c8c8c8 45%, #c0c0c0 50%, #c4c4c4 100%);
+  border-bottom: 1px solid rgba(0,0,0,0.25);
+  display: flex; align-items: center;
+  padding: 0 8px;
+  cursor: move;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+  /* Brushed metal horizontal lines */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1px,
+      rgba(255,255,255,0.08) 1px,
+      rgba(255,255,255,0.08) 2px
+    ),
+    linear-gradient(180deg, #e4e4e4 0%, #c0c0c0 50%, #c8c8c8 100%);
+}
+
+.traffic-lights { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+
+.tl {
+  width: 12px; height: 12px; border-radius: 50%;
+  cursor: pointer; border: 0.5px solid rgba(0,0,0,0.2);
+  position: relative; transition: filter 0.1s;
+  display: flex; align-items: center; justify-content: center;
+}
+.tl:hover::after { opacity: 1; }
+.tl::after {
+  position: absolute; font-size: 8px; line-height: 1;
+  opacity: 0; transition: opacity 0.1s;
+  font-weight: 700; color: rgba(0,0,0,0.5);
+}
+.tl-close { background: radial-gradient(circle at 35% 35%, #ff7c7c, #e03535); box-shadow: inset 0 -0.5px 0 rgba(0,0,0,0.15), 0 0 2px rgba(200,0,0,0.3); }
+.tl-close::after { content: '×'; font-size: 9px; }
+.tl-min { background: radial-gradient(circle at 35% 35%, #ffdd57, #e0a800); box-shadow: inset 0 -0.5px 0 rgba(0,0,0,0.15), 0 0 2px rgba(200,150,0,0.3); }
+.tl-min::after { content: '−'; }
+.tl-max { background: radial-gradient(circle at 35% 35%, #57e04e, #28a828); box-shadow: inset 0 -0.5px 0 rgba(0,0,0,0.15), 0 0 2px rgba(0,150,0,0.3); }
+.tl-max::after { content: '+'; }
+
+.titlebar-title {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  font-size: 12px; font-weight: 600; color: #444;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.titlebar-icon {
+  position: absolute; left: 50%; transform: translateX(-50%) translateX(-55px);
+  font-size: 14px; pointer-events: none;
+}
+
+.desktop-file-window .window-body {
+  padding: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #4a4a4a !important;
+}
+.desktop-pdf-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+.desktop-pdf-frame {
+  flex: 1;
+  border: none;
+  width: 100%;
+  min-height: 180px;
+  background: #3d3d3d;
+}
+.desktop-pdf-toolbar {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  background: linear-gradient(180deg, #ececec, #d6d6d6);
+  border-top: 1px solid rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #444;
+}
+
+/* Window content */
+.window-body {
+  flex: 1; overflow: auto;
+  background: #f5f5f5;
+  position: relative;
+}
+
+/* Scrollbar styling */
+.window-body::-webkit-scrollbar { width: 15px; }
+.window-body::-webkit-scrollbar-track {
+  background: linear-gradient(90deg, #c8c8c8, #e0e0e0);
+  border-left: 1px solid #b0b0b0;
+}
+.window-body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #b0b0b0, #989898);
+  border-radius: 7px;
+  border: 2px solid transparent; background-clip: content-box;
+}
+
+/* Resize handle */
+.resize-handle {
+  position: absolute; bottom: 0; right: 0;
+  width: 14px; height: 14px;
+  cursor: se-resize;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14'%3E%3Cline x1='14' y1='2' x2='2' y2='14' stroke='%23aaa' stroke-width='1.5'/%3E%3Cline x1='14' y1='7' x2='7' y2='14' stroke='%23aaa' stroke-width='1.5'/%3E%3Cline x1='14' y1='12' x2='12' y2='14' stroke='%23aaa' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 10;
+}
+
+/* ===================== DESKTOP ICONS ===================== */
+.desktop-icon {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; cursor: pointer; padding: 9px;
+  border-radius: 9px;
+  transition: background 0.1s;
+}
+.desktop-icon:hover { background: rgba(255,255,255,0.15); }
+.desktop-icon.selected { background: rgba(100,150,255,0.4); }
+
+.icon-img {
+  width: 72px; height: 72px;
+  border-radius: 15px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 39px;
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.4),
+    0 1px 0 rgba(255,255,255,0.5) inset,
+    0 -1px 0 rgba(0,0,0,0.2) inset;
+  position: relative;
+  overflow: hidden;
+}
+.icon-img::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent);
+  border-radius: 15px 15px 0 0;
+}
+
+.icon-img > svg.icon-fridge {
+  position: relative;
+  z-index: 1;
+  width: 40px;
+  height: 50px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+.project-header svg.icon-fridge {
+  position: relative;
+  z-index: 1;
+  width: 72px;
+  height: 90px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+}
+.titlebar-icon svg.icon-fridge {
+  width: 15px;
+  height: 19px;
+}
+
+.icon-label {
+  font-size: 15.75px; color: white; text-align: center;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5);
+  line-height: 1.3; word-break: break-word;
+  width: 100%; white-space: pre-line;
+}
+/* Featured desktop icons — small indicator to the left of the name (macOS-style) */
+.icon-label-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  max-width: 126px;
+}
+.icon-priority-dot {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff3b30;
+  box-shadow: 0 0 0 1.5px rgba(0,0,0,0.28);
+  margin-top: 4px;
+}
+.icon-label-row .icon-label {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  text-align: center;
+}
+
+/* ===================== DOCK ===================== */
+#dock {
+  position: fixed; bottom: 8px; left: 50%;
+  transform: translateX(-50%);
+  height: 72px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.25) 0%,
+    rgba(255,255,255,0.12) 40%,
+    rgba(200,220,255,0.08) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 0.5px solid rgba(255,255,255,0.35);
+  border-bottom: 0.5px solid rgba(255,255,255,0.15);
+  border-radius: 16px;
+  padding: 6px 16px;
+  display: flex; align-items: flex-end; gap: 8px;
+  z-index: 9000;
+  box-shadow:
+    0 2px 30px rgba(0,0,0,0.5),
+    0 0 0 0.5px rgba(255,255,255,0.2) inset,
+    0 -1px 0 rgba(0,0,0,0.3);
+}
+
+.dock-separator {
+  width: 1px; height: 48px;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.4), transparent);
+  margin: 0 4px; align-self: center;
+}
+
+.dock-icon {
+  display: flex; flex-direction: column; align-items: center;
+  cursor: pointer; position: relative;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.dock-icon:hover { transform: translateY(-12px) scale(1.15); }
+.dock-icon:hover .dock-tooltip { opacity: 1; transform: translateY(-8px); }
+.dock-icon:active { transform: translateY(-6px) scale(1.05); }
+
+.dock-icon-img {
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.4),
+    0 1px 0 rgba(255,255,255,0.5) inset;
+  position: relative; overflow: hidden;
+}
+.dock-icon-img::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.3), transparent);
+  border-radius: 12px 12px 0 0;
+}
+
+/* Compact “folder” stack on the right — social + resume (macOS-style mini tiles) */
+.dock-icon.dock-quick .dock-icon-img {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  font-size: 22px;
+}
+.dock-icon.dock-quick .dock-icon-img::after { border-radius: 10px 10px 0 0; }
+.dock-icon.dock-quick .dock-tooltip { font-size: 10px; }
+.dock-icon.dock-quick > .dock-dot { display: none !important; }
+.dock-ig-svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+.dock-icon.dock-quick .dock-ig-svg {
+  width: 22px;
+  height: 22px;
+}
+
+.dock-dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: rgba(255,255,255,0.8);
+  margin-top: 2px;
+  box-shadow: 0 0 4px rgba(255,255,255,0.5);
+}
+
+.dock-tooltip {
+  position: absolute; bottom: calc(100% + 8px);
+  background: rgba(20,20,20,0.85);
+  color: white; font-size: 11px; font-weight: 500;
+  padding: 3px 8px; border-radius: 5px;
+  white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s;
+  transform: translateY(-2px);
+  border: 0.5px solid rgba(255,255,255,0.2);
+}
+
+/* ===================== PROJECT WINDOW ===================== */
+.project-header {
+  height: 160px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 60px;
+  position: relative;
+  flex-shrink: 0;
+}
+.project-header::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.2), transparent);
+}
+
+.project-content {
+  padding: 20px 24px;
+}
+.project-title {
+  font-size: 20px; font-weight: 700; color: #1a1a1a;
+  margin-bottom: 6px;
+}
+.project-subtitle {
+  font-size: 11px; font-weight: 600; color: #888;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 14px;
+}
+.project-desc {
+  font-size: 13px; color: #444; line-height: 1.6;
+  margin-bottom: 20px;
+}
+.project-tags {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px;
+}
+.tag {
+  font-size: 10px; font-weight: 600; color: #555;
+  background: rgba(0,0,0,0.07);
+  border: 0.5px solid rgba(0,0,0,0.12);
+  border-radius: 4px; padding: 3px 8px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.project-actions {
+  display: flex; gap: 10px;
+}
+.btn {
+  flex: 1; height: 26px;
+  border-radius: 5px;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; border: none;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: filter 0.1s, transform 0.08s;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: linear-gradient(180deg, #6aacf5 0%, #2d7dd2 50%, #2070c8 100%);
+  border: 0.5px solid rgba(0,0,90,0.3);
+  color: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3);
+  text-shadow: 0 -1px 0 rgba(0,0,0,0.3);
+}
+.btn-secondary {
+  background: linear-gradient(180deg, #f0f0f0 0%, #d8d8d8 50%, #d0d0d0 100%);
+  border: 0.5px solid rgba(0,0,0,0.25);
+  color: #333;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
+/* ===================== BROWSER WINDOW ===================== */
+.browser-toolbar {
+  height: 36px;
+  background: linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 100%);
+  border-bottom: 1px solid rgba(0,0,0,0.2);
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 10px;
+  flex-shrink: 0;
+}
+
+.nav-btn {
+  width: 26px; height: 20px;
+  background: linear-gradient(180deg, #e8e8e8 0%, #d0d0d0 100%);
+  border: 0.5px solid rgba(0,0,0,0.25);
+  border-radius: 4px; cursor: pointer;
+  font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+  transition: filter 0.1s;
+}
+.nav-btn:hover { filter: brightness(1.05); }
+.nav-btn:active { background: linear-gradient(180deg, #d0d0d0 0%, #c0c0c0 100%); }
+.nav-btn:disabled { opacity: 0.4; cursor: default; }
+
+.address-bar {
+  flex: 1; height: 22px;
+  background: white;
+  border: 1px solid rgba(0,0,0,0.3);
+  border-radius: 4px;
+  padding: 0 8px;
+  font-size: 11px; color: #333;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1), 0 1px 0 rgba(255,255,255,0.8);
+}
+.address-bar:focus { border-color: #4a90d9; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1), 0 0 0 2px rgba(74,144,217,0.4); }
+
+.go-btn {
+  width: 44px; height: 22px;
+  background: linear-gradient(180deg, #6aacf5, #2d7dd2);
+  border: 0.5px solid rgba(0,0,90,0.3);
+  border-radius: 4px; cursor: pointer;
+  font-size: 11px; font-weight: 600; color: white;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.browser-tabs {
+  height: 24px;
+  background: linear-gradient(180deg, #d4d4d4 0%, #c0c0c0 100%);
+  border-bottom: 1px solid rgba(0,0,0,0.2);
+  display: flex; align-items: flex-end;
+  padding: 0 8px;
+  flex-shrink: 0;
+}
+
+.browser-tab {
+  height: 20px; padding: 0 8px 0 12px;
+  max-width: 200px;
+  background: linear-gradient(180deg, #ebebeb 0%, #e0e0e0 100%);
+  border: 0.5px solid rgba(0,0,0,0.2);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  font-size: 11px; color: #333;
+  display: flex; align-items: center; gap: 4px;
+  cursor: pointer;
+}
+.browser-tab-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.browser-tab .browser-tab-close {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: #555;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.browser-tab:hover .browser-tab-close {
+  opacity: 1;
+  pointer-events: auto;
+}
+.browser-tab .browser-tab-close:hover {
+  background: rgba(0,0,0,0.14);
+  color: #111;
+}
+.browser-tab .browser-tab-close:focus {
+  outline: none;
+}
+.browser-tab .browser-tab-close:focus-visible {
+  outline: 1px solid #4a90d9;
+  outline-offset: 1px;
+}
+.browser-tab.active {
+  background: #f5f5f5;
+  color: #111;
+}
+.browser-tab-add {
+  height: 20px; min-width: 22px; padding: 0 6px; margin-left: 4px; margin-bottom: 0;
+  background: rgba(255,255,255,0.25); border: 0.5px dashed rgba(0,0,0,0.25);
+  border-radius: 4px 4px 0 0; font-size: 14px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; color: #444;
+}
+.browser-tab-add:hover { background: rgba(255,255,255,0.45); }
+
+.browser-body { flex: 1; position: relative; background: white; overflow: hidden; }
+.sam-tab-panel { position: absolute; inset: 0; overflow: hidden; display: none; background: #fff; }
+.browser-iframe {
+  width: 100%; height: 100%;
+  border: none;
+  background: white;
+}
+
+.browser-new-tab {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  height: 100%;
+  background: linear-gradient(135deg, #1e3a5f 0%, #1a2840 100%);
+  color: white; gap: 20px;
+}
+.browser-new-tab h2 { font-size: 28px; font-weight: 300; letter-spacing: 0.1em; }
+.browser-new-tab .samium-logo { font-size: 56px; }
+.browser-new-tab p { font-size: 13px; color: rgba(255,255,255,0.6); }
+
+.browser-loading {
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, #2d7dd2 0%, #6aacf5 50%, #2d7dd2 100%);
+  background-size: 200% 100%;
+  animation: loading 1.5s linear infinite;
+  display: none;
+}
+.browser-loading.active { display: block; }
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===================== FINDER WINDOW ===================== */
+.finder-sidebar {
+  width: 140px; flex-shrink: 0;
+  background: linear-gradient(180deg, #dde3ea 0%, #c8d0da 100%);
+  border-right: 1px solid rgba(0,0,0,0.15);
+  padding: 8px 0;
+}
+.finder-sidebar-item {
+  padding: 4px 12px;
+  font-size: 12px; color: #445;
+  cursor: pointer; border-radius: 4px; margin: 0 4px;
+  display: flex; align-items: center; gap: 6px;
+}
+.finder-sidebar-item:hover { background: rgba(0,0,0,0.08); }
+.finder-sidebar-item.active { background: #4a90d9; color: white; }
+.finder-section-label {
+  font-size: 10px; font-weight: 700; color: #888;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 8px 12px 2px;
+}
+
+.finder-grid {
+  flex: 1; padding: 16px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px; align-content: start;
+  background: white;
+  overflow-y: auto;
+}
+
+.finder-file {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 8px 4px; border-radius: 4px; cursor: pointer;
+}
+.finder-file:hover { background: rgba(74,144,217,0.15); }
+.finder-file.selected { background: rgba(74,144,217,0.3); }
+.finder-file-icon {
+  font-size: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+}
+.finder-file-icon svg.icon-fridge {
+  width: 34px;
+  height: 42px;
+}
+.finder-file-name {
+  font-size: 11px; color: #333; text-align: center;
+  line-height: 1.3; word-break: break-word;
+}
+
+.finder-status-bar {
+  height: 22px;
+  background: linear-gradient(180deg, #e8e8e8 0%, #d8d8d8 100%);
+  border-top: 1px solid rgba(0,0,0,0.15);
+  display: flex; align-items: center;
+  padding: 0 12px;
+  font-size: 11px; color: #666;
+  flex-shrink: 0;
+}
+
+/* ===================== STICKY NOTE ===================== */
+.sticky-note {
+  background: #fef08a;
+  box-shadow: 3px 3px 10px rgba(0,0,0,0.3);
+}
+.sticky-note .titlebar {
+  background: #fde047;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+.sticky-note .titlebar-title { color: #92400e; text-shadow: none; }
+.sticky-note .window-body {
+  background: #fef9c3;
+  padding: 0;
+}
+.sticky-textarea {
+  width: 100%; height: 100%;
+  background: transparent;
+  border: none; outline: none;
+  padding: 12px; resize: none;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 14px; line-height: 1.5; color: #333;
+}
+
+/* ===================== CLOCK WIDGET ===================== */
+.clock-widget { background: #1a1a1a; }
+.clock-widget .titlebar {
+  background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+  border-bottom: 1px solid #000;
+}
+.clock-widget .titlebar-title { color: #888; text-shadow: none; }
+.clock-body {
+  background: radial-gradient(circle, #1e1e1e 0%, #0a0a0a 100%);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 4px;
+  height: 100%;
+}
+#clock-time {
+  font-size: 42px; font-weight: 100;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 20px rgba(255,255,255,0.3);
+  letter-spacing: 0.04em;
+}
+#clock-date {
+  font-size: 12px; color: rgba(255,255,255,0.5);
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+
+/* ===================== SNAKE GAME ===================== */
+.game-widget { background: #111; }
+.game-widget .titlebar {
+  background: linear-gradient(180deg, #222, #111);
+  border-bottom: 1px solid #000;
+}
+.game-widget .titlebar-title { color: #00ff41; text-shadow: 0 0 8px #00ff41; }
+.game-body {
+  background: #0a0a0a;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  height: 100%; gap: 10px;
+  padding: 10px;
+}
+#snake-canvas {
+  border: 1px solid #00ff41;
+  box-shadow: 0 0 15px rgba(0,255,65,0.3);
+  image-rendering: pixelated;
+}
+.game-instructions {
+  font-size: 11px; color: rgba(0,255,65,0.7);
+  text-align: center; line-height: 1.4;
+  font-family: monospace;
+}
+.game-score {
+  font-size: 14px; color: #00ff41;
+  font-family: monospace; font-weight: 700;
+  text-shadow: 0 0 8px #00ff41;
+}
+.game-start-btn {
+  background: transparent; border: 1px solid #00ff41;
+  color: #00ff41; font-family: monospace;
+  padding: 6px 16px; cursor: pointer;
+  font-size: 12px; border-radius: 2px;
+  text-shadow: 0 0 8px #00ff41;
+  box-shadow: 0 0 8px rgba(0,255,65,0.2);
+  transition: all 0.15s;
+}
+.game-start-btn:hover {
+  background: rgba(0,255,65,0.1);
+  box-shadow: 0 0 16px rgba(0,255,65,0.4);
+}
+
+/* ===================== CALCULATOR ===================== */
+.calc-body {
+  background: #c0c0c0;
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+  height: 100%;
+}
+.calc-display {
+  background: #1a1a1a;
+  border-radius: 3px;
+  padding: 8px 12px;
+  text-align: right;
+  font-size: 28px;
+  color: #00ff41;
+  font-family: monospace;
+  border: 1px solid #888;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);
+  min-height: 52px;
+  display: flex; align-items: center; justify-content: flex-end;
+  word-break: break-all;
+}
+.calc-btns {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 4px; flex: 1;
+}
+.calc-btn {
+  border-radius: 4px; cursor: pointer;
+  font-size: 14px; font-weight: 600;
+  border: none; border-top: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.3);
+  transition: filter 0.08s, transform 0.08s;
+}
+.calc-btn:hover { filter: brightness(1.08); }
+.calc-btn:active { transform: scale(0.96); box-shadow: 0 1px 0 rgba(0,0,0,0.25); }
+.calc-btn-num { background: linear-gradient(180deg, #e0e0e0, #c8c8c8); color: #333; }
+.calc-btn-op { background: linear-gradient(180deg, #ffa940, #e07820); color: white; }
+.calc-btn-fn { background: linear-gradient(180deg, #b0b0b0, #989898); color: #333; }
+.calc-btn-eq { background: linear-gradient(180deg, #4a90e2, #2d6cc0); color: white; }
+.calc-btn-wide { grid-column: span 2; }
+
+/* ===================== MISC ===================== */
+.separator { height: 1px; background: linear-gradient(90deg, transparent, rgba(0,0,0,0.15), transparent); margin: 12px 0; }
+
+.window-sidebar-row { display: flex; height: calc(100% - 22px); overflow: hidden; }
+
+/* Tooltip */
+.tooltip {
+  position: fixed; z-index: 99999;
+  background: rgba(20,20,20,0.9); color: white;
+  font-size: 11px; padding: 4px 8px; border-radius: 4px;
+  pointer-events: none; opacity: 0; transition: opacity 0.1s;
+  border: 0.5px solid rgba(255,255,255,0.2);
+}
+
+/* context menu */
+.ctx-menu {
+  position: fixed; z-index: 99998;
+  background: rgba(245,245,245,0.97);
+  border: 0.5px solid rgba(0,0,0,0.25);
+  border-radius: 5px;
+  padding: 4px 0;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  min-width: 160px;
+  backdrop-filter: blur(10px);
+}
+.ctx-item {
+  padding: 4px 16px;
+  font-size: 13px; color: #333;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+}
+.ctx-item:hover { background: #2d6cc0; color: white; }
+.ctx-separator { height: 1px; background: rgba(0,0,0,0.12); margin: 4px 0; }
+.ctx-label { font-size: 11px; color: #888; padding: 2px 16px; pointer-events: none; }
+
+/* bounce animation */
+@keyframes dockBounce {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-20px); }
+  60% { transform: translateY(-8px); }
+  80% { transform: translateY(-14px); }
+}
+.dock-icon.bouncing { animation: dockBounce 0.6s ease 2; }
+
+/* ── Menubar dropdowns ── */
+.mb-dropdown {
+  position: fixed; top: 22px; z-index: 10002;
+  min-width: 200px; max-width: 280px;
+  background: rgba(253,253,253,0.96);
+  backdrop-filter: blur(20px);
+  border: 0.5px solid rgba(0,0,0,0.2);
+  border-radius: 6px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.28);
+  padding: 6px 0;
+  font-size: 13px;
+  display: none;
+}
+.mb-dropdown.open { display: block; }
+.mb-dd-item {
+  padding: 5px 14px; cursor: pointer; color: #222;
+  display: flex; align-items: center; gap: 8px;
+}
+.mb-dd-item:hover { background: #0b79ff; color: white; }
+.mb-dd-item.muted { color: #888; font-size: 11px; pointer-events: none; }
+.mb-dd-sep { height: 1px; background: rgba(0,0,0,0.1); margin: 4px 0; }
+
+/* ── Control Center ── */
+#control-center {
+  position: fixed; top: 28px; right: 12px; z-index: 10001;
+  width: 300px; padding: 14px;
+  background: rgba(240,240,245,0.92);
+  backdrop-filter: blur(24px) saturate(1.4);
+  border: 0.5px solid rgba(0,0,0,0.12);
+  border-radius: 14px;
+  box-shadow: 0 16px 50px rgba(0,0,0,0.35);
+  display: none;
+  flex-direction: column; gap: 12px;
+}
+#control-center.open { display: flex; }
+.cc-section-title { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
+.cc-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cc-toggle {
+  width: 44px; height: 26px; border-radius: 13px; background: #ccc; position: relative; cursor: pointer;
+  transition: background 0.2s; border: none;
+}
+.cc-toggle.on { background: #34c759; }
+.cc-toggle::after {
+  content: ''; position: absolute; width: 22px; height: 22px; border-radius: 50%;
+  background: white; top: 2px; left: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: transform 0.2s;
+}
+.cc-toggle.on::after { transform: translateX(18px); }
+.cc-slider-wrap { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 11px; color: #555; }
+.cc-slider-wrap input[type=range] { flex: 1; }
+
+/* ── Desktop: scattered icons & photo stamps ── */
+#desktop-icons {
+  position: absolute; inset: 0; z-index: 5; pointer-events: none;
+}
+#desktop-icons .desktop-icon {
+  position: absolute; pointer-events: auto;
+  width: 132px; margin: 0;
+}
+.desktop-stamp {
+  position: absolute; z-index: 4; pointer-events: auto;
+  width: 140px; border-radius: 4px; overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.3);
+  cursor: grab; user-select: none;
+}
+.desktop-stamp:active { cursor: grabbing; }
+.desktop-stamp img { width: 100%; height: auto; display: block; }
+
+/* ── Photo Booth (macOS-style: full preview + 3×3 live effect grid) ── */
+.photo-booth-layout {
+  display: flex; flex-direction: column;
+  height: 100%; min-height: 380px;
+  background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+}
+.pb-main {
+  flex: 1; min-height: 0;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  background: #000; overflow: hidden;
+}
+.pb-main video {
+  position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px;
+}
+.pb-main #pb-canvas {
+  max-width: 100%; max-height: 100%; object-fit: contain;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.12);
+}
+.pb-main.pb-grid-mode #pb-canvas {
+  visibility: hidden;
+}
+.pb-more-floating {
+  position: absolute;
+  bottom: 12px; right: 12px;
+  z-index: 8;
+  padding: 7px 16px;
+  font-size: 12px; font-weight: 600;
+  font-family: -apple-system, 'Lucida Grande', sans-serif;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.22);
+  background: rgba(45,45,45,0.92);
+  color: #f5f5f5;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.45);
+}
+.pb-more-floating:hover {
+  background: rgba(58,58,58,0.95);
+}
+.pb-more-floating:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.pb-filter-grid {
+  position: absolute; inset: 0;
+  z-index: 5;
+  background: #000;
+  display: none;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 4px;
+  padding: 6px;
+  box-sizing: border-box;
+}
+.pb-filter-grid.open { display: grid; }
+.pb-filter-tile {
+  position: relative;
+  min-width: 0; min-height: 0;
+  border-radius: 6px;
+  border: 2px solid rgba(255,255,255,0.12);
+  cursor: pointer;
+  overflow: hidden;
+  background: #111;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+}
+.pb-filter-tile:hover { border-color: rgba(255,255,255,0.35); }
+.pb-filter-tile.active {
+  border-color: #0b79ff;
+  box-shadow: 0 0 0 2px rgba(11,121,255,0.7);
+}
+.pb-filter-tile canvas {
+  display: block;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.pb-filter-tile span {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  font-size: 10px; font-weight: 500;
+  padding: 5px 4px;
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.82));
+  color: white; text-align: center;
+  pointer-events: none;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+}
+.pb-toolbar {
+  display: flex; align-items: center; justify-content: center;
+  gap: 14px;
+  padding: 10px 14px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #d0d0d0 0%, #b0b0b0 100%);
+  border-top: 1px solid rgba(0,0,0,0.22);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
+}
+.pb-toolbar button {
+  border: none; font-size: 11px; font-weight: 600; cursor: pointer;
+}
+.pb-take {
+  width: 54px; height: 54px; border-radius: 50%;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 0;
+  background: radial-gradient(circle at 32% 28%, #ff5c5c, #c92a2a);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    0 3px 8px rgba(0,0,0,0.35);
+  border: 0.5px solid rgba(0,0,0,0.35);
+}
+.pb-take svg { width: 26px; height: 26px; display: block; }
+.pb-take:disabled { opacity: 0.55; cursor: not-allowed; }
+.pb-take:hover:not(:disabled) { filter: brightness(1.06); }
+.pb-countdown-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 22;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(72px, 22vmin, 140px);
+  font-weight: 200;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 6px 28px rgba(0,0,0,0.55);
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  pointer-events: none;
+  line-height: 1;
+}
+.pb-countdown-overlay.pb-cd-visible { display: flex; }
+.pb-countdown-overlay.pb-cd-flash {
+  background: rgba(255,255,255,0.92);
+  color: rgba(255,255,255,0);
+  text-shadow: none;
+  transition: background 0.05s ease-out;
+}
+.pb-save {
+  padding: 8px 14px; border-radius: 5px;
+  background: linear-gradient(180deg, #f0f0f0, #d8d8d8);
+  color: #222;
+  border: 0.5px solid rgba(0,0,0,0.22) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+}
+.pb-cam-err {
+  display: none;
+  position: absolute;
+  left: 8px; right: 8px;
+  bottom: 52px;
+  z-index: 9;
+  text-align: center;
+  font-size: 11px;
+  color: #ff7a7a;
+  pointer-events: none;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+.pb-cam-err.pb-cam-err-visible { display: block; }
+
+/* Photos (albums + grid, macOS-style) */
+.photos-window .window-body {
+  padding: 0 !important;
+  background: #1c1c1e !important;
+  overflow: hidden !important;
+}
+.photos-app {
+  display: flex;
+  height: 100%;
+  min-height: 320px;
+  color: #f5f5f7;
+  font-size: 13px;
+  position: relative;
+}
+.photos-sidebar {
+  width: 168px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #2c2c2e 0%, #1c1c1e 100%);
+  border-right: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  padding: 10px 8px;
+}
+.photos-sidebar-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.45);
+  padding: 4px 8px 10px;
+}
+.photos-album-list { display: flex; flex-direction: column; gap: 2px; }
+.photos-album {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: #f5f5f7;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+.photos-album:hover { background: rgba(255,255,255,0.08); }
+.photos-album.active {
+  background: rgba(10, 132, 255, 0.35);
+  box-shadow: 0 0 0 1px rgba(10, 132, 255, 0.4);
+}
+.photos-count {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  font-variant-numeric: tabular-nums;
+}
+.photos-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #000;
+}
+.photos-toolbar {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: #1c1c1e;
+}
+.photos-toolbar #photos-album-label { font-weight: 600; font-size: 15px; }
+.photos-meta { font-size: 12px; color: rgba(255,255,255,0.45); }
+.photos-grid {
+  flex: 1;
+  overflow: auto;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 8px;
+  align-content: start;
+}
+.photos-thumb {
+  position: relative;
+  aspect-ratio: 1;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: zoom-in;
+  background: #2c2c2e;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+}
+.photos-thumb:focus-visible { outline: 2px solid #0a84ff; outline-offset: 2px; }
+.photos-thumb img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+.photos-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  padding: 24px;
+  text-align: center;
+  color: rgba(255,255,255,0.5);
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 340px;
+}
+.photos-empty[hidden] {
+  display: none !important;
+}
+.photos-empty code { font-size: 11px; color: rgba(255,255,255,0.7); }
+.photos-lightbox {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0,0,0,0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.photos-lightbox[hidden] { display: none !important; }
+.photos-lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+.photos-lightbox-close {
+  position: absolute;
+  top: 10px; right: 14px;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.photos-lightbox-close:hover { background: rgba(255,255,255,0.28); }
+
+.photo-booth-window .window-body { padding: 0 !important; background: #111 !important; overflow: hidden !important; }
+
+/* Finder search */
+.finder-search-wrap {
+  padding: 8px 10px; background: linear-gradient(180deg, #e2e8f0, #cbd5e1);
+  border-bottom: 1px solid rgba(0,0,0,0.12); flex-shrink: 0;
+}
+.finder-search {
+  width: 100%; height: 26px; border-radius: 5px; border: 1px solid rgba(0,0,0,0.2);
+  padding: 0 10px 0 28px; font-size: 12px; outline: none;
+  background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") 8px center no-repeat;
+}
+.finder-search:focus { border-color: #0b79ff; box-shadow: 0 0 0 2px rgba(11,121,255,0.25); }
+.finder-file.hidden { display: none !important; }
+
+#mb-cc-toggle.cc-active { background: rgba(0,0,0,0.15); }
+</style>
+</head>
+<body>
+
+<!-- DESKTOP -->
+<div id="desktop">
+
+  <!-- MENUBAR -->
+  <div id="menubar">
+    <div class="menubar-apple" id="mb-apple" title="Apple menu">🍎</div>
+    <div class="menubar-item" id="mb-finder" data-menu="finder">Finder</div>
+    <div class="menubar-item" data-menu="file">File</div>
+    <div class="menubar-item" data-menu="edit">Edit</div>
+    <div class="menubar-item" data-menu="view">View</div>
+    <div class="menubar-item" data-menu="go">Go</div>
+    <div class="menubar-item" data-menu="window">Window</div>
+    <div class="menubar-item" data-menu="help">Help</div>
+    <div class="menubar-right">
+      <div class="menubar-right-item" id="mb-battery" title="Power">🔋 100%</div>
+      <div class="menubar-right-item" id="mb-wifi" title="Wi‑Fi">📶</div>
+      <div class="menubar-right-item" id="mb-cc-toggle" title="Control Center">⛶</div>
+      <div class="menubar-right-item" id="mb-clock"></div>
+    </div>
+  </div>
+
+  <div id="mb-dropdown-apple" class="mb-dropdown"></div>
+  <div id="mb-dropdown-finder" class="mb-dropdown"></div>
+  <div id="mb-dropdown-file" class="mb-dropdown"></div>
+  <div id="mb-dropdown-edit" class="mb-dropdown"></div>
+  <div id="mb-dropdown-view" class="mb-dropdown"></div>
+  <div id="mb-dropdown-go" class="mb-dropdown"></div>
+  <div id="mb-dropdown-window" class="mb-dropdown"></div>
+  <div id="mb-dropdown-help" class="mb-dropdown"></div>
+
+  <div id="control-center">
+    <div class="cc-section-title">Connectivity</div>
+    <div class="cc-row">
+      <span>Wi‑Fi</span>
+      <button type="button" class="cc-toggle on" id="cc-wifi" aria-pressed="true" onclick="this.classList.toggle('on')"></button>
+    </div>
+    <div class="cc-row">
+      <span>Bluetooth</span>
+      <button type="button" class="cc-toggle" id="cc-bt" aria-pressed="false" onclick="this.classList.toggle('on')"></button>
+    </div>
+    <div class="cc-section-title">Display & sound</div>
+    <div class="cc-row cc-slider-wrap">
+      <span>🔅</span>
+      <input type="range" id="cc-bright" min="40" max="100" value="100" oninput="document.getElementById('desktop').style.filter='brightness('+this.value+'%)'">
+    </div>
+    <div class="cc-row cc-slider-wrap">
+      <span>🔊</span>
+      <input type="range" id="cc-vol" min="0" max="100" value="70">
+    </div>
+    <div class="cc-section-title">Quick actions</div>
+    <div class="mb-dd-item" onclick="openPhotoBooth(); toggleControlCenter(false);">📷 Photo Booth</div>
+    <div class="mb-dd-item" onclick="openPhotos(); toggleControlCenter(false);">🖼️ Photos</div>
+    <div class="mb-dd-item" onclick="openSamium('https://www.youtube.com'); toggleControlCenter(false);">▶️ Open YouTube</div>
+    <div class="mb-dd-item" onclick="changeWallpaper(); toggleControlCenter(false);">🎨 Rotate wallpaper</div>
+  </div>
+
+  <!-- DESKTOP ICONS (right side) -->
+  <div id="desktop-icons"></div>
+
+  <!-- DOCK -->
+  <div id="dock">
+    <div class="dock-icon" data-app="finder" title="Finder">
+      <div class="dock-icon-img" style="background: linear-gradient(135deg, #2196f3 0%, #1565c0 100%);">🗂️</div>
+      <div class="dock-dot"></div>
+      <div class="dock-tooltip">Finder</div>
+    </div>
+    <div class="dock-icon" data-app="samium" title="Samium">
+      <div class="dock-icon-img" style="background: linear-gradient(135deg, #e8f4fd 0%, #bee3f8 50%, #4299e1 100%);">🌐</div>
+      <div class="dock-dot" style="display:none"></div>
+      <div class="dock-tooltip">Samium</div>
+    </div>
+    <div class="dock-icon" data-app="photobooth" title="Photo Booth">
+      <div class="dock-icon-img" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">📷</div>
+      <div class="dock-dot" style="display:none"></div>
+      <div class="dock-tooltip">Photo Booth</div>
+    </div>
+    <div class="dock-icon" data-app="photos" title="Photos">
+      <div class="dock-icon-img" style="background: linear-gradient(135deg, #ff375f 0%, #ff9f0a 25%, #ffd60a 45%, #30d158 60%, #0a84ff 78%, #bf5af2 100%);">🖼️</div>
+      <div class="dock-dot" style="display:none"></div>
+      <div class="dock-tooltip">Photos</div>
+    </div>
+    <div class="dock-separator"></div>
+    <div class="dock-icon" data-app="stickies" title="Stickies">
+      <div class="dock-icon-img" style="background: linear-gradient(135deg, #fef08a 0%, #fde047 100%);">📝</div>
+      <div class="dock-dot" style="display:none"></div>
+      <div class="dock-tooltip">Stickies</div>
+    </div>
+    <div class="dock-icon" data-app="calculator" title="Calculator">
+      <div class="dock-icon-img" style="background: linear-gradient(135deg, #555 0%, #222 100%);">🔢</div>
+      <div class="dock-dot" style="display:none"></div>
+      <div class="dock-tooltip">Calculator</div>
+    </div>
+    <div class="dock-icon" data-app="clock" title="World Clock">
+      <div class="dock-icon-img" style="background: linear-gradient(135deg, #1a1a1a 0%, #000 100%);">🕐</div>
+      <div class="dock-dot" style="display:none"></div>
+      <div class="dock-tooltip">World Clock</div>
+    </div>
+    <div class="dock-icon" data-app="snake" title="Snake">
+      <div class="dock-icon-img" style="background: linear-gradient(135deg, #0a2a0a 0%, #001000 100%);">🐍</div>
+      <div class="dock-dot" style="display:none"></div>
+      <div class="dock-tooltip">Snake</div>
+    </div>
+    <div class="dock-separator"></div>
+    <div class="dock-icon dock-quick" data-dock-url="https://x.com/sam__brott" title="X (Twitter)">
+      <div class="dock-icon-img" style="background: linear-gradient(135deg, #0f1419 0%, #2b2f33 100%); font-family: system-ui, -apple-system, sans-serif; font-weight: 800; font-size: 17px; color: #fff;">𝕏</div>
+      <div class="dock-tooltip">X</div>
+    </div>
+    <div class="dock-icon dock-quick" data-dock-url="https://www.instagram.com/sam.brott/" title="Instagram">
+      <div class="dock-icon-img" style="background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 45%, #fcb045 100%);">
+        <svg class="dock-ig-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill="#fff" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      </div>
+      <div class="dock-tooltip">Instagram</div>
+    </div>
+    <div class="dock-icon dock-quick" data-dock-url="https://www.linkedin.com/in/sam-brott-970828155/" title="LinkedIn">
+      <div class="dock-icon-img" style="background: linear-gradient(135deg, #0a66c2 0%, #004182 100%); font-family: system-ui, -apple-system, sans-serif; font-weight: 800; font-size: 16px; color: #fff;">in</div>
+      <div class="dock-tooltip">LinkedIn</div>
+    </div>
+    <div class="dock-icon dock-quick" data-dock-file="1" data-dock-url="https://www.sambrott.com/portfolio%20site%20assets/Resume%202026.pdf" title="Résumé (opens on desktop)">
+      <div class="dock-icon-img" style="background: linear-gradient(135deg, #f5f5f7 0%, #d1d1d6 100%); font-size: 20px;">📄</div>
+      <div class="dock-tooltip">Résumé</div>
+    </div>
+    <div class="dock-separator"></div>
+    <div class="dock-icon" data-app="trash" title="Trash">
+      <div class="dock-icon-img" style="background: linear-gradient(135deg, #e0e0e0 0%, #c0c0c0 100%);">🗑️</div>
+      <div class="dock-tooltip">Trash</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- CONTEXT MENU -->
+<div class="ctx-menu" id="ctx-menu" style="display:none;"></div>
+
+<script>
+/* ============================================================
+   SAM OS — CORE ENGINE
+   ============================================================ */
+
+/* Unicode has no refrigerator/fridge emoji — The Fridge uses this graphic everywhere. */
+const FRIDGE_ICON_SVG = '<svg class="icon-fridge" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 40" aria-hidden="true"><rect x="5" y="3" width="22" height="34" rx="2.5" fill="rgba(255,255,255,0.94)" stroke="rgba(0,0,0,0.38)" stroke-width="1.15"/><rect x="5" y="3" width="22" height="13" rx="2.5" fill="rgba(248,250,252,0.92)" stroke="rgba(0,0,0,0.38)" stroke-width="1.15"/><line x1="5" y1="16.5" x2="27" y2="16.5" stroke="rgba(0,0,0,0.38)" stroke-width="1"/><line x1="16" y1="16.5" x2="16" y2="37" stroke="rgba(0,0,0,0.22)" stroke-width="1"/><rect x="20" y="24" width="2.8" height="7" rx="0.6" fill="rgba(65,65,65,0.85)"/></svg>';
+
+const DESKTOP_ITEMS = [
+  {
+    id: 'forma',
+    name: 'Forma',
+    emoji: '📄',
+    color: 'linear-gradient(135deg, #E8622A 0%, #c0401a 100%)',
+    type: 'Product',
+    tags: ['Next.js', 'Files', 'GitHub: Forma'],
+    finderTerms: 'forma files documents',
+    desc: 'Forma — professional file & document tools.',
+    action: 'samium',
+    url: 'https://www.forma.cool/',
+    priority: true
+  },
+  {
+    id: 'overprint',
+    name: 'Overprint',
+    emoji: '🖨️',
+    color: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+    type: 'Design tools',
+    tags: ['CMYK', 'Browser', 'GitHub: overprint'],
+    finderTerms: 'overprint cmyk design tools',
+    desc: 'Overprint — CMYK design tools in the browser (separate from Forma).',
+    action: 'samium',
+    url: 'https://overprint.design',
+    priority: true
+  },
+  {
+    id: 'the-fridge',
+    name: 'The Fridge',
+    emoji: '',
+    iconHtml: FRIDGE_ICON_SVG,
+    color: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 50%, #7f1d1d 100%)',
+    type: 'Microsite',
+    tags: ['GitHub: fridge'],
+    finderTerms: 'fridge gallery experiments',
+    desc: 'The Fridge — github.com/sambrott/fridge.',
+    action: 'samium',
+    url: 'https://fridge-delta-one.vercel.app'
+  },
+  {
+    id: 'infinite-array',
+    name: 'Infinite Array',
+    emoji: '🔁',
+    color: 'linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%)',
+    type: 'Generative',
+    tags: ['GitHub: ambient2'],
+    finderTerms: 'infinite array ambient pattern loop fruit stack',
+    desc: 'Infinite Array / Fruit stack — github.com/sambrott/ambient2.',
+    action: 'samium',
+    url: 'https://fruit-world-eight.vercel.app/'
+  },
+  {
+    id: 'sports-talk',
+    name: 'Sports Talk',
+    emoji: '🏟️',
+    color: 'linear-gradient(135deg, #ff6b35 0%, #c0392b 100%)',
+    type: 'Mobile App',
+    tags: ['React', 'Vite', 'GitHub: sportstalk'],
+    finderTerms: 'sports talk app fan',
+    desc: 'Sports Talk app — github.com/sambrott/sportstalk.',
+    action: 'samium',
+    url: 'https://sportstalk-lovat.vercel.app',
+    priority: true
+  },
+  {
+    id: 'picture-arrangement',
+    name: 'Picture arrangement',
+    emoji: '🖼️',
+    color: 'linear-gradient(135deg, #14b8a6 0%, #0f766e 100%)',
+    type: 'Microsite',
+    tags: ['GitHub: Arrangement-of-pictures'],
+    finderTerms: 'arrangement pictures collage grid layout',
+    desc: 'Build an arrangement of pictures — github.com/sambrott/Arrangement-of-pictures (GitHub Pages).',
+    action: 'samium',
+    url: 'https://sambrott.github.io/Arrangement-of-pictures/'
+  },
+  {
+    id: 'abstract-composition',
+    name: 'Abstract composition',
+    emoji: '🎨',
+    color: 'linear-gradient(135deg, #f59e0b 0%, #dc2626 100%)',
+    type: 'Microsite',
+    tags: ['GitHub: Abstract-composition'],
+    finderTerms: 'abstract composition art',
+    desc: 'Abstract composition — github.com/sambrott/Abstract-composition (GitHub Pages).',
+    action: 'samium',
+    url: 'https://sambrott.github.io/Abstract-composition/'
+  },
+  {
+    id: 'still-life',
+    name: 'Still life',
+    emoji: '🍋',
+    color: 'linear-gradient(135deg, #78716c 0%, #44403c 100%)',
+    type: 'Microsite',
+    tags: ['GitHub: still-life'],
+    finderTerms: 'still life photography',
+    desc: 'Still life — github.com/sambrott/still-life (GitHub Pages).',
+    action: 'samium',
+    url: 'https://sambrott.github.io/still-life/'
+  },
+  {
+    id: 'coors-banquet',
+    name: 'Coors Banquet',
+    emoji: '🍺',
+    color: 'linear-gradient(135deg, #ca8a04 0%, #92400e 100%)',
+    type: 'Campaign',
+    tags: ['GitHub: Banquet'],
+    finderTerms: 'coors banquet beer golden',
+    desc: 'Coors Banquet — banquetbottlecaps.com.',
+    action: 'samium',
+    url: 'https://banquetbottlecaps.com',
+    priority: true
+  },
+  {
+    id: 'portfolio',
+    name: 'Portfolio',
+    emoji: '💼',
+    color: 'linear-gradient(135deg, #e11d48 0%, #be123c 50%, #831843 100%)',
+    type: 'Portfolio',
+    tags: ['Web', 'GitHub: portfolio-website-2026'],
+    finderTerms: 'sam brott portfolio sambrott',
+    desc: 'Portfolio — sambrott.com (source: github.com/sambrott/portfolio-website-2026).',
+    action: 'samium',
+    url: 'https://sambrott.com',
+    priority: true
+  }
+];
+
+function desktopItemIconMarkup(p) {
+  return p.iconHtml != null ? p.iconHtml : p.emoji;
+}
+
+const PROJECTS = DESKTOP_ITEMS;
+
+/**
+ * Photos app — add albums and image URLs here (HTTPS links to JPG/PNG/GIF/WebP, etc.).
+ * Empty `photos: []` albums appear in the sidebar; fill them when you are ready.
+ */
+const PHOTOS_ALBUMS = [
+  {
+    id: 'portfolio-picks',
+    name: 'Portfolio picks',
+    photos: [
+      'https://res.cloudinary.com/dz9d0grpe/image/upload/v1770047264/DSC_0127_copy_arcwlr.jpg',
+      'https://res.cloudinary.com/dz9d0grpe/image/upload/v1770047264/Screenshot_2025-11-12_at_10.32.12_PM_c5qqhi.png',
+      'https://res.cloudinary.com/dz9d0grpe/image/upload/v1770047247/coqui%CC%81_insta_2_copy_2_vcomcm.jpg',
+      'https://res.cloudinary.com/dz9d0grpe/image/upload/v1770047245/sea_turtle_insta_2_copy_2_hzzyhm.jpg',
+      'https://res.cloudinary.com/dz9d0grpe/image/upload/v1770047247/Sun_God_2_copy_2_iks9xw.jpg',
+      'https://res.cloudinary.com/dz9d0grpe/image/upload/v1772918552/green_glasses_tt8fwv.jpg'
+    ]
+  },
+  { id: 'travel', name: 'Travel', photos: [] },
+  { id: 'experiments', name: 'Experiments', photos: [] },
+  { id: 'archive', name: 'Archive', photos: [] }
+];
+
+const SAMIUM_ID = 'samium';
+const SAMIUM_SOCIAL_ID = 'samium-social';
+const samiumStates = {};
+function ensureSamiumState(winId) {
+  if (!samiumStates[winId]) {
+    samiumStates[winId] = { tabs: [], activeTabIndex: 0 };
+  }
+  return samiumStates[winId];
+}
+function destroySamiumState(winId) {
+  const st = samiumStates[winId];
+  if (st && st.tabs) {
+    st.tabs.forEach(t => { if (t.panelEl) t.panelEl.remove(); });
+  }
+  delete samiumStates[winId];
+}
+
+// Window management
+let windows = {};
+let zCounter = 200;
+let activeWin = null;
+let dragState = null;
+let resizeState = null;
+let desktopIconDrag = null;
+
+function bringToFront(id) {
+  zCounter++;
+  const win = document.getElementById(id);
+  if (!win) return;
+  win.style.zIndex = zCounter;
+  if (activeWin && activeWin !== id) {
+    const prev = document.getElementById(activeWin);
+    if (prev) { prev.classList.remove('active'); prev.classList.add('inactive'); }
+  }
+  win.classList.remove('inactive'); win.classList.add('active');
+  activeWin = id;
+  syncMenubarApplicationName();
+}
+
+/** Frontmost non-minimized window by z-index (for menubar when activeWin is stale or minimized). */
+function getTopmostVisibleWindowId() {
+  let best = null;
+  let bestZ = -1;
+  for (const w of document.querySelectorAll('#desktop > .window')) {
+    if (w.style.display === 'none') continue;
+    const z = parseInt(w.style.zIndex, 10) || 0;
+    if (z >= bestZ) {
+      bestZ = z;
+      best = w.id;
+    }
+  }
+  return best;
+}
+
+/** First menubar slot: active app name (matches window title), or Finder when desktop / no windows. */
+function syncMenubarApplicationName() {
+  const mb = document.getElementById('mb-finder');
+  if (!mb) return;
+  let win = null;
+  if (activeWin && windows[activeWin] && !windows[activeWin].minimized) {
+    win = document.getElementById(activeWin);
+    if (!win || win.style.display === 'none') win = null;
+  }
+  if (!win) {
+    const topId = getTopmostVisibleWindowId();
+    win = topId ? document.getElementById(topId) : null;
+  }
+  let label = 'Finder';
+  if (win) {
+    const t = win.querySelector('.titlebar-title')?.textContent?.trim();
+    if (t) label = t;
+  }
+  mb.textContent = label;
+  mb.title = label;
+}
+
+function createWindow({ id, title, icon='', x, y, w, h, content, className='', resizable=true }) {
+  if (document.getElementById(id)) { bringToFront(id); return; }
+  const win = document.createElement('div');
+  win.className = `window ${className}`;
+  win.id = id;
+  win.style.cssText = `left:${x}px;top:${y}px;width:${w}px;height:${h}px;`;
+
+  win.innerHTML = `
+    <div class="titlebar">
+      <div class="traffic-lights">
+        <div class="tl tl-close" data-action="close" title="Close"></div>
+        <div class="tl tl-min" data-action="minimize" title="Minimize"></div>
+        <div class="tl tl-max" data-action="maximize" title="Zoom"></div>
+      </div>
+      ${icon ? `<div class="titlebar-icon">${icon}</div>` : ''}
+      <div class="titlebar-title">${title}</div>
+    </div>
+    <div class="window-body">${content}</div>
+    ${resizable ? '<div class="resize-handle"></div>' : ''}
+  `;
+
+  document.getElementById('desktop').appendChild(win);
+  bringToFront(id);
+
+  // Traffic lights
+  win.querySelector('.tl-close').addEventListener('click', e => { e.stopPropagation(); closeWindow(id); });
+  win.querySelector('.tl-min').addEventListener('click', e => { e.stopPropagation(); minimizeWindow(id); });
+  win.querySelector('.tl-max').addEventListener('click', e => { e.stopPropagation(); maximizeWindow(id); });
+
+  // Drag
+  const titlebar = win.querySelector('.titlebar');
+  titlebar.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('tl')) return;
+    bringToFront(id);
+    dragState = { id, startX: e.clientX - win.offsetLeft, startY: e.clientY - win.offsetTop };
+    e.preventDefault();
+  });
+
+  // Resize
+  if (resizable) {
+    win.querySelector('.resize-handle').addEventListener('mousedown', e => {
+      e.stopPropagation();
+      resizeState = { id, startX: e.clientX, startY: e.clientY, startW: win.offsetWidth, startH: win.offsetHeight };
+      e.preventDefault();
+    });
+  }
+
+  // Focus on click
+  win.addEventListener('mousedown', () => bringToFront(id));
+
+  windows[id] = { minimized: false, maxed: false, prevRect: null };
+  updateDockDot(id, true);
+  return win;
+}
+
+function closeWindow(id) {
+  if (id === 'photobooth' && window._pbCleanup) {
+    window._pbCleanup();
+    window._pbCleanup = null;
+  }
+  if (id === SAMIUM_ID || id === SAMIUM_SOCIAL_ID) {
+    destroySamiumState(id);
+  }
+  const win = document.getElementById(id);
+  if (!win) return;
+  win.style.transition = 'transform 0.15s, opacity 0.15s';
+  win.style.transform = 'scale(0.8)'; win.style.opacity = '0';
+  setTimeout(() => {
+    win.remove();
+    delete windows[id];
+    if (activeWin === id) activeWin = getTopmostVisibleWindowId();
+    syncMenubarApplicationName();
+  }, 150);
+  updateDockDot(id, false);
+}
+
+function minimizeWindow(id) {
+  const win = document.getElementById(id);
+  if (!win) return;
+  win.style.transition = 'transform 0.3s, opacity 0.3s';
+  win.style.transform = 'scale(0.1) translateY(400px)';
+  win.style.opacity = '0';
+  setTimeout(() => { win.style.display = 'none'; win.style.transition = ''; }, 300);
+  windows[id].minimized = true;
+  if (activeWin === id) activeWin = getTopmostVisibleWindowId();
+  syncMenubarApplicationName();
+}
+
+function maximizeWindow(id) {
+  const win = document.getElementById(id);
+  if (!win || !windows[id]) return;
+  const state = windows[id];
+  if (!state.maxed) {
+    state.prevRect = { left: win.offsetLeft, top: win.offsetTop, width: win.offsetWidth, height: win.offsetHeight };
+    win.style.transition = 'all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    win.style.left = '0'; win.style.top = '22px';
+    win.style.width = '100vw'; win.style.height = 'calc(100vh - 102px)';
+    state.maxed = true;
+  } else {
+    const r = state.prevRect;
+    win.style.transition = 'all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    win.style.left = r.left + 'px'; win.style.top = r.top + 'px';
+    win.style.width = r.width + 'px'; win.style.height = r.height + 'px';
+    state.maxed = false;
+  }
+  setTimeout(() => { if (win) win.style.transition = ''; }, 300);
+}
+
+function restoreWindow(id) {
+  const win = document.getElementById(id);
+  if (!win || !windows[id]) return;
+  if (windows[id].minimized) {
+    win.style.display = 'flex';
+    win.style.transition = 'transform 0.3s, opacity 0.3s';
+    win.style.transform = ''; win.style.opacity = '';
+    setTimeout(() => { if (win) win.style.transition = ''; }, 300);
+    windows[id].minimized = false;
+    bringToFront(id);
+  }
+}
+
+// Drag / resize global events
+document.addEventListener('mousemove', e => {
+  if (desktopIconDrag) {
+    const { el, sl, st, sx, sy } = desktopIconDrag;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (Math.hypot(dx, dy) > 5) desktopIconDrag.moved = true;
+    el.style.left = (sl + dx) + 'px';
+    el.style.top = (st + dy) + 'px';
+    return;
+  }
+  if (dragState) {
+    const win = document.getElementById(dragState.id);
+    if (win) {
+      let nx = e.clientX - dragState.startX;
+      let ny = e.clientY - dragState.startY;
+      ny = Math.max(22, ny);
+      win.style.left = nx + 'px'; win.style.top = ny + 'px';
+    }
+  }
+  if (resizeState) {
+    const win = document.getElementById(resizeState.id);
+    if (win) {
+      const nw = Math.max(300, resizeState.startW + e.clientX - resizeState.startX);
+      const nh = Math.max(200, resizeState.startH + e.clientY - resizeState.startY);
+      win.style.width = nw + 'px'; win.style.height = nh + 'px';
+    }
+  }
+});
+document.addEventListener('mouseup', () => {
+  if (desktopIconDrag) {
+    const { item, moved } = desktopIconDrag;
+    if (!moved && item) openDesktopItem(item);
+    desktopIconDrag = null;
+  }
+  dragState = null; resizeState = null;
+});
+
+function updateDockDot(id, active) {
+  const dockIcon = document.querySelector(`[data-app="${id}"]`);
+  if (dockIcon) {
+    const dot = dockIcon.querySelector('.dock-dot');
+    if (dot) dot.style.display = active ? '' : 'none';
+  }
+}
+
+/* ============================================================
+   PROJECT WINDOWS
+   ============================================================ */
+function openDesktopItemById(idStr) {
+  const item = DESKTOP_ITEMS.find(x => x.id === idStr);
+  if (item) openDesktopItem(item);
+}
+
+function openDualLaunchWindow(item) {
+  const wid = 'dual-' + item.id;
+  if (document.getElementById(wid)) { bringToFront(wid); return; }
+  const btns = item.urls.map(u =>
+    `<button class="btn btn-primary" onclick="samiumOpenUrlInNewTab(${JSON.stringify(u.url)})">${u.label}</button>`
+  ).join('');
+  const content = `
+    <div style="padding:20px;">
+      <div style="font-size:16px;font-weight:700;margin-bottom:12px;">${item.name}</div>
+      <p style="color:#555;font-size:13px;line-height:1.5;margin-bottom:16px;">${item.desc}</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">${btns}</div>
+      <div class="separator" style="margin:14px 0;"></div>
+      <p style="font-size:11px;color:#888;">Opens each link in a new <strong>Samium</strong> tab (stays inside Sam OS).</p>
+    </div>
+  `;
+  createWindow({
+    id: wid, title: item.name, icon: desktopItemIconMarkup(item),
+    x: 140, y: 72, w: 360, h: 320, content
+  });
+}
+
+function openDesktopItem(item) {
+  const a = item.action || 'samium';
+  if (a === 'dual') openDualLaunchWindow(item);
+  else if (a === 'window') openProjectDetailWindow(item);
+  else if (a === 'external') window.open(item.url, '_blank');
+  else samiumOpenUrlInNewTab(item.url);
+}
+
+function openProjectDetailWindow(project) {
+  const id = 'project-' + project.id;
+  const u = project.url.replace(/'/g, "\\'");
+  const content = `
+    <div class="project-header" style="background:${project.color}">${desktopItemIconMarkup(project)}</div>
+    <div class="project-content">
+      <div class="project-title">${project.name}</div>
+      <div class="project-subtitle">${project.type}</div>
+      <div class="project-desc">${project.desc}</div>
+      <div class="project-tags">${(project.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+      <div class="separator"></div>
+      <div class="project-actions">
+        <button class="btn btn-primary" onclick="openInSamium('${u}', '')">🌐 Open in Samium</button>
+        <button class="btn btn-secondary" onclick="window.open('${u}','_blank')">↗️ External Link</button>
+      </div>
+    </div>
+  `;
+  const offset = Object.keys(windows).length * 22;
+  createWindow({
+    id, title: project.name, icon: desktopItemIconMarkup(project),
+    x: 120 + offset, y: 60 + offset,
+    w: 360, h: 480, content
+  });
+}
+
+function openProject(project) {
+  openDesktopItem(project);
+}
+
+/* ============================================================
+   SAMIUM BROWSER (multi-tab) — main window + separate social window
+   ============================================================ */
+function samiumBrowserRoot(winId) {
+  const win = document.getElementById(winId);
+  return win ? win.querySelector('.window-body') : null;
+}
+
+function samiumQ(winId, sel) {
+  const r = samiumBrowserRoot(winId);
+  return r ? r.querySelector(sel) : null;
+}
+
+function getSamiumActiveTab(winId) {
+  const st = ensureSamiumState(winId);
+  return st.tabs[st.activeTabIndex];
+}
+
+function samiumEnsurePanelForTab(winId, idx) {
+  const st = ensureSamiumState(winId);
+  const tab = st.tabs[idx];
+  const body = samiumQ(winId, '.sam-browser-body');
+  if (!body || !tab) return null;
+  if (tab.panelEl && tab.panelEl.isConnected) return tab.panelEl;
+  const panel = document.createElement('div');
+  panel.className = 'sam-tab-panel';
+  body.appendChild(panel);
+  tab.panelEl = panel;
+  return panel;
+}
+
+function samiumSyncPanelVisibility(winId) {
+  const st = ensureSamiumState(winId);
+  st.tabs.forEach((t, i) => {
+    if (t.panelEl) t.panelEl.style.display = i === st.activeTabIndex ? 'block' : 'none';
+  });
+}
+
+function samiumNewTabPageHtml(winId) {
+  const w = JSON.stringify(winId);
+  return `
+    <div class="browser-new-tab">
+      <div class="samium-logo">🌐</div>
+      <h2>Samium</h2>
+      <p>The browser for Sam OS — built on WebKit, powered by curiosity</p>
+      <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:320px;">
+        ${['forma.cool','overprint.design','sambrott.com','wikipedia.org','example.com'].map(u=>`<button class="btn btn-secondary" style="flex:none;width:auto;padding:0 12px;" onclick="samiumNavigate('https://${u}', ${w})">${u}</button>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function samiumWindowInnerHtml(winId) {
+  const w = JSON.stringify(winId);
+  return `
+    <div style="display:flex;flex-direction:column;height:100%;">
+      <div class="browser-tabs sam-tab-strip"></div>
+      <div class="browser-toolbar">
+        <button type="button" class="nav-btn sam-back" onclick="samiumBack(${w})" disabled>‹</button>
+        <button type="button" class="nav-btn sam-fwd" onclick="samiumFwd(${w})" disabled>›</button>
+        <button type="button" class="nav-btn" onclick="samiumRefresh(${w})">↺</button>
+        <input class="address-bar sam-url" type="text" value="" placeholder="Enter URL or search…"
+          onkeydown="if(event.key==='Enter')samiumGo(${w})" />
+        <button type="button" class="go-btn" onclick="samiumGo(${w})">Go</button>
+      </div>
+      <div class="browser-loading sam-loading"></div>
+      <div class="browser-body sam-browser-body"></div>
+    </div>
+  `;
+}
+
+function samiumShowNewTabPage(winId) {
+  const st = ensureSamiumState(winId);
+  const tab = getSamiumActiveTab(winId);
+  const body = samiumQ(winId, '.sam-browser-body');
+  if (!body || !tab) return;
+  samiumEnsurePanelForTab(winId, st.activeTabIndex);
+  tab.panelEl.innerHTML = samiumNewTabPageHtml(winId);
+  tab.title = 'New Tab';
+  tab.history = [];
+  tab.historyIdx = -1;
+  const urlInput = samiumQ(winId, '.sam-url');
+  if (urlInput) urlInput.value = '';
+  samiumSyncPanelVisibility(winId);
+  samiumRenderTabs(winId);
+  updateSamiumNav(winId);
+}
+
+function samiumEscapeAttr(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;');
+}
+
+function samiumRenderTabs(winId) {
+  const strip = samiumQ(winId, '.sam-tab-strip');
+  const st = ensureSamiumState(winId);
+  if (!strip) return;
+  strip.innerHTML = st.tabs.map((t, i) => {
+    const rawTitle = t.title || 'Tab';
+    const safe = samiumEscapeAttr(rawTitle);
+    return `<div class="browser-tab${i === st.activeTabIndex ? ' active' : ''}" data-sam-tab="${i}" title="${safe}">
+      <span class="browser-tab-label">${samiumEscapeAttr(rawTitle)}</span>
+      <button type="button" class="browser-tab-close" title="Close tab" aria-label="Close tab">×</button>
+    </div>`;
+  }).join('') + '<div class="browser-tab-add" title="New tab">+</div>';
+}
+
+/** Close Samium tab at index; last tab resets to a fresh New Tab page. */
+function samiumCloseTab(i, winId = SAMIUM_ID) {
+  if (!document.getElementById(winId)) return;
+  const st = ensureSamiumState(winId);
+  if (i < 0 || i >= st.tabs.length) return;
+
+  if (st.tabs.length <= 1) {
+    const tab = st.tabs[0];
+    if (tab.panelEl) {
+      tab.panelEl.remove();
+      tab.panelEl = null;
+    }
+    st.activeTabIndex = 0;
+    samiumEnsurePanelForTab(winId, 0);
+    samiumShowNewTabPage(winId);
+    return;
+  }
+
+  const removed = st.tabs[i];
+  if (removed.panelEl) {
+    removed.panelEl.remove();
+    removed.panelEl = null;
+  }
+  st.tabs.splice(i, 1);
+  if (i === st.activeTabIndex) {
+    st.activeTabIndex = Math.min(i, st.tabs.length - 1);
+  } else if (i < st.activeTabIndex) {
+    st.activeTabIndex--;
+  }
+  samiumSwitchTab(st.activeTabIndex, winId);
+}
+
+function samiumWireTabStrip(winId) {
+  const strip = samiumQ(winId, '.sam-tab-strip');
+  if (!strip || strip.dataset.samWired === winId) return;
+  strip.dataset.samWired = winId;
+  strip.addEventListener('click', e => {
+    const add = e.target.closest('.browser-tab-add');
+    if (add) {
+      samiumNewTab(undefined, winId);
+      return;
+    }
+    const closeBtn = e.target.closest('.browser-tab-close');
+    if (closeBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const cell = closeBtn.closest('[data-sam-tab]');
+      if (cell) samiumCloseTab(+cell.dataset.samTab, winId);
+      return;
+    }
+    const cell = e.target.closest('[data-sam-tab]');
+    if (cell) samiumSwitchTab(+cell.dataset.samTab, winId);
+  });
+}
+
+function samiumNewTab(url, winId = SAMIUM_ID) {
+  if (!document.getElementById(winId)) return;
+  const st = ensureSamiumState(winId);
+  st.tabs.push({ history: [], historyIdx: -1, title: 'New Tab', panelEl: null });
+  st.activeTabIndex = st.tabs.length - 1;
+  samiumEnsurePanelForTab(winId, st.activeTabIndex);
+  samiumSyncPanelVisibility(winId);
+  samiumRenderTabs(winId);
+  if (url) samiumNavigate(url, winId);
+  else samiumShowNewTabPage(winId);
+}
+
+function samiumSwitchTab(i, winId = SAMIUM_ID) {
+  const st = ensureSamiumState(winId);
+  if (i < 0 || i >= st.tabs.length) return;
+  samiumEnsurePanelForTab(winId, i);
+  st.activeTabIndex = i;
+  samiumRenderTabs(winId);
+  samiumSyncPanelVisibility(winId);
+  const tab = getSamiumActiveTab(winId);
+  const urlInput = samiumQ(winId, '.sam-url');
+  if (!tab) return;
+  if (tab.historyIdx < 0) {
+    if (urlInput) urlInput.value = '';
+    if (tab.panelEl && tab.panelEl.childElementCount === 0) samiumShowNewTabPage(winId);
+  } else {
+    if (urlInput) urlInput.value = tab.history[tab.historyIdx];
+    if (tab.panelEl && tab.panelEl.childElementCount === 0) {
+      samiumLoadUrlIntoBody(tab.history[tab.historyIdx], false, winId);
+    }
+  }
+  updateSamiumNav(winId);
+}
+
+function samiumTabTitleFromUrl(url) {
+  try {
+    const u = new URL(url);
+    return '🌐 ' + u.hostname.replace(/^www\./, '');
+  } catch (e) {
+    return '🌐 Tab';
+  }
+}
+
+function normalizeSamiumUrl(raw) {
+  let url = String(raw).trim();
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  try {
+    const u = new URL(url);
+    const h = u.hostname.replace(/^www\./, '');
+    if ((h === 'youtube.com' || h === 'm.youtube.com' || h === 'music.youtube.com') && u.pathname.startsWith('/watch')) {
+      const v = u.searchParams.get('v');
+      if (v) return 'https://www.youtube.com/embed/' + v + '?rel=0';
+    }
+    if (h === 'youtu.be' && u.pathname.length > 1) {
+      const idPart = u.pathname.slice(1).split('/')[0];
+      if (idPart) return 'https://www.youtube.com/embed/' + idPart + '?rel=0';
+    }
+  } catch (e) {}
+  return url;
+}
+
+function samiumApplySandbox(iframe, url) {
+  const isYtEmbed = /youtube\.com\/embed/i.test(url);
+  if (!isYtEmbed) {
+    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+  } else {
+    iframe.removeAttribute('sandbox');
+  }
+}
+
+function samiumLoadUrlIntoBody(url, pushHistory, winId = SAMIUM_ID) {
+  url = normalizeSamiumUrl(url);
+  const bodyRoot = samiumQ(winId, '.sam-browser-body');
+  const loading = samiumQ(winId, '.sam-loading');
+  const urlInput = samiumQ(winId, '.sam-url');
+  const st = ensureSamiumState(winId);
+  const tab = getSamiumActiveTab(winId);
+  if (!bodyRoot || !tab) return;
+
+  samiumEnsurePanelForTab(winId, st.activeTabIndex);
+  const panel = tab.panelEl;
+  if (!panel) return;
+
+  if (pushHistory) {
+    tab.history = tab.history.slice(0, tab.historyIdx + 1);
+    tab.history.push(url);
+    tab.historyIdx = tab.history.length - 1;
+  }
+
+  if (urlInput) urlInput.value = url;
+  tab.title = samiumTabTitleFromUrl(url);
+  samiumRenderTabs(winId);
+  if (loading) loading.classList.add('active');
+
+  panel.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:relative;width:100%;height:100%;min-height:240px;';
+  const iframe = document.createElement('iframe');
+  iframe.className = 'browser-iframe';
+  iframe.title = 'Samium frame';
+  samiumApplySandbox(iframe, url);
+  iframe.src = url;
+  const fallback = document.createElement('div');
+  fallback.style.cssText = 'display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;background:#f0f0f0;padding:20px;text-align:center;font-size:13px;color:#555;gap:12px;';
+  fallback.innerHTML = '<div><strong>This page cannot load inside Samium.</strong><br>Many sites block embedding for security.</div><button type="button" class="btn btn-primary sam-f-openx">Open in new browser tab</button>';
+  wrap.appendChild(iframe);
+  wrap.appendChild(fallback);
+  panel.appendChild(wrap);
+  samiumSyncPanelVisibility(winId);
+
+  let cleared = false;
+  const clearLoading = () => { if (!cleared && loading) { cleared = true; loading.classList.remove('active'); } };
+  iframe.onload = clearLoading;
+  iframe.onerror = clearLoading;
+  setTimeout(clearLoading, 12000);
+  setTimeout(() => {
+    try {
+      if (iframe.contentWindow && iframe.contentDocument && iframe.contentDocument.body
+          && iframe.contentDocument.body.children.length === 0) {
+        fallback.style.display = 'flex';
+      }
+    } catch (err) { /* cross-origin */ }
+  }, 2500);
+
+  fallback.querySelector('.sam-f-openx').onclick = () => window.open(url, '_blank', 'noopener');
+  updateSamiumNav(winId);
+}
+
+function openSamium(initialUrl, openInNewTab, winId = SAMIUM_ID) {
+  if (document.getElementById(winId)) {
+    bringToFront(winId);
+    if (!initialUrl) return;
+    if (openInNewTab) samiumNewTab(initialUrl, winId);
+    else samiumNavigate(initialUrl, winId);
+    return;
+  }
+
+  const title = winId === SAMIUM_SOCIAL_ID ? 'Samium — Social' : 'Samium';
+  const x = winId === SAMIUM_SOCIAL_ID ? 130 : 80;
+  const y = winId === SAMIUM_SOCIAL_ID ? 58 : 45;
+
+  createWindow({
+    id: winId, title, icon: '🌐',
+    x, y, w: 900, h: 580,
+    content: samiumWindowInnerHtml(winId)
+  });
+
+  const st = ensureSamiumState(winId);
+  st.tabs = [{ history: [], historyIdx: -1, title: 'New Tab', panelEl: null }];
+  st.activeTabIndex = 0;
+  samiumWireTabStrip(winId);
+  samiumEnsurePanelForTab(winId, 0);
+  samiumSyncPanelVisibility(winId);
+  samiumRenderTabs(winId);
+  if (initialUrl) samiumNavigate(initialUrl, winId);
+  else samiumShowNewTabPage(winId);
+}
+
+/** Main Samium: open or add tab (portfolio / projects). */
+function samiumOpenUrlInNewTab(url, winId = SAMIUM_ID) {
+  if (!document.getElementById(winId)) openSamium(url, false, winId);
+  else {
+    bringToFront(winId);
+    samiumNewTab(url, winId);
+  }
+}
+
+/** Dock X / Instagram / LinkedIn: separate browser window so it stays apart from project browsing. */
+function openSamiumSocial(url) {
+  const id = SAMIUM_SOCIAL_ID;
+  if (!document.getElementById(id)) {
+    openSamium(url || undefined, false, id);
+    return;
+  }
+  bringToFront(id);
+  if (url) samiumNewTab(url, id);
+}
+
+function samiumNavigate(url, winId = SAMIUM_ID) {
+  samiumLoadUrlIntoBody(url, true, winId);
+}
+
+function samiumGo(winId = SAMIUM_ID) {
+  const urlInput = samiumQ(winId, '.sam-url');
+  const val = urlInput?.value.trim();
+  if (!val) return;
+  let url = val;
+  if (!val.includes('.') || val.includes(' ')) {
+    url = 'https://www.google.com/search?q=' + encodeURIComponent(val);
+  } else if (!/^https?:\/\//i.test(val)) {
+    url = 'https://' + val;
+  }
+  samiumNavigate(url, winId);
+}
+
+function samiumBack(winId = SAMIUM_ID) {
+  const tab = getSamiumActiveTab(winId);
+  if (!tab || tab.historyIdx <= 0) return;
+  tab.historyIdx--;
+  samiumLoadUrlIntoBody(tab.history[tab.historyIdx], false, winId);
+}
+
+function samiumFwd(winId = SAMIUM_ID) {
+  const tab = getSamiumActiveTab(winId);
+  if (!tab || tab.historyIdx >= tab.history.length - 1) return;
+  tab.historyIdx++;
+  samiumLoadUrlIntoBody(tab.history[tab.historyIdx], false, winId);
+}
+
+function samiumRefresh(winId = SAMIUM_ID) {
+  const tab = getSamiumActiveTab(winId);
+  if (!tab || tab.historyIdx < 0) return;
+  samiumLoadUrlIntoBody(tab.history[tab.historyIdx], false, winId);
+}
+
+function updateSamiumNav(winId = SAMIUM_ID) {
+  const back = samiumQ(winId, '.sam-back');
+  const fwd = samiumQ(winId, '.sam-fwd');
+  const tab = getSamiumActiveTab(winId);
+  const hi = tab ? tab.historyIdx : -1;
+  const h = tab ? tab.history : [];
+  if (back) back.disabled = hi <= 0;
+  if (fwd) fwd.disabled = hi >= h.length - 1;
+}
+
+function openInSamium(url, name) {
+  samiumOpenUrlInNewTab(url);
+}
+
+/** Chrome/Chromium PDF viewer: 67% zoom, thumbnails sidebar collapsed at launch. */
+function resumePdfEmbedUrl(baseUrl) {
+  try {
+    const u = new URL(baseUrl, window.location.href);
+    u.hash = 'zoom=67&navpanes=0';
+    return u.toString();
+  } catch {
+    const noHash = String(baseUrl).split('#')[0];
+    return noHash + '#zoom=67&navpanes=0';
+  }
+}
+
+/** Résumé PDF as a document window on the desktop (Preview-style), not inside Samium. */
+function openDesktopResumePdf(url) {
+  const id = 'desktop-file-resume';
+  const embedSrc = resumePdfEmbedUrl(url);
+  const embedJson = JSON.stringify(embedSrc);
+  const plainJson = JSON.stringify(url);
+  if (document.getElementById(id)) {
+    bringToFront(id);
+    const frame = document.querySelector('#' + id + ' .desktop-pdf-frame');
+    if (frame) frame.src = embedSrc;
+    const links = document.querySelectorAll('#' + id + ' .desktop-pdf-toolbar a');
+    links.forEach(a => { a.href = url; });
+    return;
+  }
+  const content = `
+    <div class="desktop-pdf-wrap">
+      <iframe class="desktop-pdf-frame" title="Résumé PDF" src=${embedJson}></iframe>
+      <div class="desktop-pdf-toolbar">
+        <span>Resume 2026.pdf</span>
+        <a class="btn btn-secondary" href=${plainJson} target="_blank" rel="noopener">Open in browser</a>
+      </div>
+    </div>
+  `;
+  createWindow({
+    id,
+    title: 'Resume 2026.pdf',
+    icon: '📄',
+    x: 150, y: 52,
+    w: 620, h: 780,
+    content,
+    className: 'desktop-file-window'
+  });
+}
+
+/* ============================================================
+   MINI APPS
+   ============================================================ */
+function openStickies() {
+  const id = 'stickies';
+  createWindow({
+    id, title: 'Stickies', icon: '📝',
+    x: 500, y: 80, w: 260, h: 220,
+    content: `<textarea class="sticky-textarea" placeholder="Type a note..."></textarea>`,
+    className: 'sticky-note'
+  });
+}
+
+function openClock() {
+  const id = 'clock';
+  createWindow({
+    id, title: 'World Clock', icon: '🕐',
+    x: 300, y: 300, w: 240, h: 140,
+    content: `<div class="clock-body"><div id="clock-time">--:--:--</div><div id="clock-date"></div></div>`,
+    className: 'clock-widget'
+  });
+  startClock();
+}
+
+function startClock() {
+  function tick() {
+    const el = document.getElementById('clock-time');
+    const de = document.getElementById('clock-date');
+    if (!el) return;
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    el.textContent = `${h}:${m}:${s}`;
+    if (de) de.textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    setTimeout(tick, 1000);
+  }
+  tick();
+}
+
+function openCalculator() {
+  const id = 'calculator';
+  createWindow({
+    id, title: 'Calculator',
+    x: 600, y: 100, w: 220, h: 300,
+    content: `
+      <div class="calc-body">
+        <div class="calc-display" id="calc-display">0</div>
+        <div class="calc-btns">
+          <button class="calc-btn calc-btn-fn" onclick="calcFn('C')">C</button>
+          <button class="calc-btn calc-btn-fn" onclick="calcFn('+/-')">+/-</button>
+          <button class="calc-btn calc-btn-fn" onclick="calcFn('%')">%</button>
+          <button class="calc-btn calc-btn-op" onclick="calcOp('÷')">÷</button>
+          <button class="calc-btn calc-btn-num" onclick="calcNum('7')">7</button>
+          <button class="calc-btn calc-btn-num" onclick="calcNum('8')">8</button>
+          <button class="calc-btn calc-btn-num" onclick="calcNum('9')">9</button>
+          <button class="calc-btn calc-btn-op" onclick="calcOp('×')">×</button>
+          <button class="calc-btn calc-btn-num" onclick="calcNum('4')">4</button>
+          <button class="calc-btn calc-btn-num" onclick="calcNum('5')">5</button>
+          <button class="calc-btn calc-btn-num" onclick="calcNum('6')">6</button>
+          <button class="calc-btn calc-btn-op" onclick="calcOp('−')">−</button>
+          <button class="calc-btn calc-btn-num" onclick="calcNum('1')">1</button>
+          <button class="calc-btn calc-btn-num" onclick="calcNum('2')">2</button>
+          <button class="calc-btn calc-btn-num" onclick="calcNum('3')">3</button>
+          <button class="calc-btn calc-btn-op" onclick="calcOp('+')">+</button>
+          <button class="calc-btn calc-btn-num calc-btn-wide" onclick="calcNum('0')">0</button>
+          <button class="calc-btn calc-btn-num" onclick="calcNum('.')">.</button>
+          <button class="calc-btn calc-btn-eq" onclick="calcEq()">=</button>
+        </div>
+      </div>
+    `
+  });
+}
+
+let calcVal = '0', calcPending = null, calcOper = null, calcNew = true;
+function calcDisplay(v) {
+  const el = document.getElementById('calc-display');
+  if (el) el.textContent = v;
+}
+function calcNum(n) {
+  if (calcNew) { calcVal = (n === '.') ? '0.' : n; calcNew = false; }
+  else { if (n === '.' && calcVal.includes('.')) return; calcVal += n; }
+  calcDisplay(calcVal);
+}
+function calcOp(op) {
+  calcPending = parseFloat(calcVal); calcOper = op; calcNew = true;
+  calcDisplay(calcVal);
+}
+function calcEq() {
+  if (calcPending === null) return;
+  const cur = parseFloat(calcVal);
+  let r;
+  switch(calcOper) {
+    case '+': r = calcPending + cur; break;
+    case '−': r = calcPending - cur; break;
+    case '×': r = calcPending * cur; break;
+    case '÷': r = cur !== 0 ? calcPending / cur : 'Error'; break;
+    default: r = cur;
+  }
+  calcVal = String(parseFloat(r.toFixed(10)));
+  calcDisplay(calcVal); calcPending = null; calcOper = null; calcNew = true;
+}
+function calcFn(fn) {
+  if (fn === 'C') { calcVal = '0'; calcPending = null; calcOper = null; calcNew = true; calcDisplay('0'); }
+  else if (fn === '+/-') { calcVal = String(-parseFloat(calcVal)); calcDisplay(calcVal); }
+  else if (fn === '%') { calcVal = String(parseFloat(calcVal)/100); calcDisplay(calcVal); }
+}
+
+/* ============================================================
+   SNAKE GAME
+   ============================================================ */
+let snakeGame = null;
+function openSnake() {
+  const id = 'snake';
+  createWindow({
+    id, title: 'Snake', icon: '🐍',
+    x: 400, y: 200, w: 320, h: 380,
+    content: `
+      <div class="game-body">
+        <div class="game-score">Score: <span id="snake-score">0</span></div>
+        <canvas id="snake-canvas" width="280" height="280"></canvas>
+        <div class="game-instructions">Arrow Keys or WASD to move</div>
+        <button class="game-start-btn" onclick="startSnake()">▶ START GAME</button>
+      </div>
+    `,
+    className: 'game-widget'
+  });
+}
+
+function startSnake() {
+  const canvas = document.getElementById('snake-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const sz = 14; const cols = 20; const rows = 20;
+  let snake = [{x:10,y:10}], dir = {x:1,y:0}, nextDir = {x:1,y:0};
+  let food = {x:5,y:5}, score = 0, running = true;
+
+  function rndFood() {
+    return { x: Math.floor(Math.random()*cols), y: Math.floor(Math.random()*rows) };
+  }
+  food = rndFood();
+
+  const handler = (e) => {
+    const map = {ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0},
+      w:{x:0,y:-1},s:{x:0,y:1},a:{x:-1,y:0},d:{x:1,y:0}};
+    const k = map[e.key];
+    if (k && !(k.x === -dir.x && k.y === -dir.y)) { nextDir = k; e.preventDefault(); }
+  };
+  document.addEventListener('keydown', handler);
+
+  function draw() {
+    if (!running || !document.getElementById('snake-canvas')) {
+      document.removeEventListener('keydown', handler); return;
+    }
+    dir = nextDir;
+    const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+    if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows ||
+        snake.some(s => s.x===head.x && s.y===head.y)) {
+      ctx.fillStyle = 'rgba(255,0,0,0.3)'; ctx.fillRect(0,0,280,280);
+      ctx.fillStyle = '#00ff41'; ctx.font = 'bold 20px monospace';
+      ctx.textAlign = 'center'; ctx.fillText('GAME OVER', 140, 130);
+      ctx.font = '14px monospace'; ctx.fillText('Score: ' + score, 140, 160);
+      document.removeEventListener('keydown', handler);
+      running = false; return;
+    }
+    snake.unshift(head);
+    if (head.x === food.x && head.y === food.y) {
+      score++; food = rndFood();
+      const el = document.getElementById('snake-score');
+      if (el) el.textContent = score;
+    } else snake.pop();
+
+    ctx.fillStyle = '#0a0a0a'; ctx.fillRect(0,0,280,280);
+    // Grid
+    ctx.strokeStyle = 'rgba(0,255,65,0.05)';
+    for (let i=0; i<cols; i++) { ctx.beginPath(); ctx.moveTo(i*sz,0); ctx.lineTo(i*sz,280); ctx.stroke(); }
+    for (let i=0; i<rows; i++) { ctx.beginPath(); ctx.moveTo(0,i*sz); ctx.lineTo(280,i*sz); ctx.stroke(); }
+    // Food
+    ctx.fillStyle = '#ff4444';
+    ctx.shadowColor = '#ff4444'; ctx.shadowBlur = 8;
+    ctx.fillRect(food.x*sz+1, food.y*sz+1, sz-2, sz-2);
+    ctx.shadowBlur = 0;
+    // Snake
+    snake.forEach((s, i) => {
+      const g = ctx.createLinearGradient(s.x*sz, s.y*sz, s.x*sz+sz, s.y*sz+sz);
+      g.addColorStop(0, i===0 ? '#88ff88' : '#00ff41');
+      g.addColorStop(1, i===0 ? '#00ff41' : '#00aa20');
+      ctx.fillStyle = g;
+      ctx.shadowColor = '#00ff41'; ctx.shadowBlur = i===0?12:4;
+      ctx.fillRect(s.x*sz+1, s.y*sz+1, sz-2, sz-2);
+    });
+    ctx.shadowBlur = 0;
+
+    setTimeout(draw, 120);
+  }
+  draw();
+}
+
+const PB_EFFECTS = [
+  { id: 'vintage', name: 'Sepia booth' },
+  { id: 'pixel', name: 'Mega pixel' },
+  { id: 'rgb', name: 'RGB glitch' },
+  { id: 'mirror', name: 'Twin mirror' },
+  { id: 'none', name: 'Normal' },
+  { id: 'acid', name: 'Acid trip' },
+  { id: 'thermal', name: 'Alien heat' },
+  { id: 'invert', name: 'X-Ray' },
+  { id: 'kaleido', name: 'Kaleido quad' }
+];
+
+let pbState = { effect: 'none', raf: null, stream: null, lastBlob: null, lastName: 'snap', countdown: false, captureGen: 0 };
+
+function applyPbThermal(ctx, w, h) {
+  const img = ctx.getImageData(0, 0, w, h);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const br = (d[i] + d[i + 1] + d[i + 2]) / 3;
+    const t = br / 255;
+    if (t < 0.28) { d[i] = 20; d[i + 1] = 0; d[i + 2] = 100; }
+    else if (t < 0.52) { d[i] = 0; d[i + 1] = 180; d[i + 2] = 255; }
+    else if (t < 0.72) { d[i] = 255; d[i + 1] = 220; d[i + 2] = 40; }
+    else { d[i] = 255; d[i + 1] = 80; d[i + 2] = 80; }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+function applyPbPixel(ctx, w, h) {
+  const img = ctx.getImageData(0, 0, w, h);
+  const d = img.data;
+  const bs = 12;
+  for (let y = 0; y < h; y += bs) {
+    for (let x = 0; x < w; x += bs) {
+      let r = 0, g = 0, b = 0, n = 0;
+      for (let dy = 0; dy < bs && y + dy < h; dy++)
+        for (let dx = 0; dx < bs && x + dx < w; dx++) {
+          const j = 4 * ((y + dy) * w + (x + dx));
+          r += d[j]; g += d[j + 1]; b += d[j + 2]; n++;
+        }
+      r = ~~(r / n); g = ~~(g / n); b = ~~(b / n);
+      for (let dy = 0; dy < bs && y + dy < h; dy++)
+        for (let dx = 0; dx < bs && x + dx < w; dx++) {
+          const j = 4 * ((y + dy) * w + (x + dx));
+          d[j] = r; d[j + 1] = g; d[j + 2] = b;
+        }
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+function applyPbRgb(ctx, w, h) {
+  const img = ctx.getImageData(0, 0, w, h);
+  const d = img.data;
+  const copy = new Uint8ClampedArray(d);
+  const sh = 8;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = 4 * (y * w + x);
+      const xr = Math.min(w - 1, x + sh);
+      const xb = Math.max(0, x - sh);
+      const ir = 4 * (y * w + xr);
+      const ib = 4 * (y * w + xb);
+      d[i] = copy[ir];
+      d[i + 2] = copy[ib + 2];
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+function applyPbKaleido(ctx, video, ow, oh, vw, vh) {
+  const qw = ow / 2, qh = oh / 2;
+  ctx.clearRect(0, 0, ow, oh);
+  ctx.drawImage(video, 0, 0, vw / 2, vh / 2, 0, 0, qw, qh);
+  ctx.save();
+  ctx.translate(qw, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(video, 0, 0, vw / 2, vh / 2, 0, 0, qw, qh);
+  ctx.restore();
+  ctx.save();
+  ctx.translate(0, qh);
+  ctx.scale(1, -1);
+  ctx.drawImage(video, 0, 0, vw / 2, vh / 2, 0, 0, qw, qh);
+  ctx.restore();
+  ctx.save();
+  ctx.translate(ow, oh);
+  ctx.scale(-1, -1);
+  ctx.drawImage(video, 0, 0, vw / 2, vh / 2, 0, 0, qw, qh);
+  ctx.restore();
+}
+
+const PB_TILE_W = 200;
+const PB_TILE_H = 150;
+
+function renderPbFrame(ctx, video, eff, acidT) {
+  const ow = ctx.canvas.width;
+  const oh = ctx.canvas.height;
+  const vw = video.videoWidth;
+  const vh = video.videoHeight;
+  if (!vw || !vh || !ow || !oh) return;
+
+  /* Horizontal mirror — matches typical Photo Booth / selfie preview */
+  ctx.save();
+  ctx.translate(ow, 0);
+  ctx.scale(-1, 1);
+
+  if (eff === 'mirror') {
+    const hw = ow / 2;
+    ctx.filter = 'none';
+    ctx.drawImage(video, 0, 0, vw / 2, vh, 0, 0, hw, oh);
+    ctx.save();
+    ctx.translate(ow, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0, vw / 2, vh, 0, 0, hw, oh);
+    ctx.restore();
+  } else if (eff === 'kaleido') {
+    applyPbKaleido(ctx, video, ow, oh, vw, vh);
+  } else {
+    ctx.save();
+    if (eff === 'invert') ctx.filter = 'invert(1)';
+    else if (eff === 'vintage') ctx.filter = 'sepia(0.55) contrast(1.22) saturate(0.88)';
+    else if (eff === 'acid') ctx.filter = `hue-rotate(${(acidT / 18) % 360}deg) saturate(2)`;
+    else ctx.filter = 'none';
+    ctx.drawImage(video, 0, 0, vw, vh, 0, 0, ow, oh);
+    ctx.restore();
+    if (eff === 'thermal') applyPbThermal(ctx, ow, oh);
+    else if (eff === 'pixel') applyPbPixel(ctx, ow, oh);
+    else if (eff === 'rgb') applyPbRgb(ctx, ow, oh);
+  }
+
+  ctx.restore();
+}
+
+function pbLoop() {
+  if (!document.getElementById('photobooth')) return;
+  const video = document.getElementById('pb-video');
+  if (!video || video.readyState < 2) {
+    pbState.raf = requestAnimationFrame(pbLoop);
+    return;
+  }
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!vw) {
+    pbState.raf = requestAnimationFrame(pbLoop);
+    return;
+  }
+  const acidT = performance.now();
+  const grid = document.getElementById('pb-filter-grid');
+  const gridOpen = grid && grid.classList.contains('open');
+
+  if (!gridOpen) {
+    const canvas = document.getElementById('pb-canvas');
+    if (canvas) {
+      canvas.width = vw;
+      canvas.height = vh;
+      renderPbFrame(canvas.getContext('2d'), video, pbState.effect, acidT);
+    }
+  } else if (grid) {
+    const tiles = grid.querySelectorAll('.pb-filter-tile canvas');
+    PB_EFFECTS.forEach((e, i) => {
+      const c = tiles[i];
+      if (!c) return;
+      if (c.width !== PB_TILE_W) c.width = PB_TILE_W;
+      if (c.height !== PB_TILE_H) c.height = PB_TILE_H;
+      renderPbFrame(c.getContext('2d'), video, e.id, acidT);
+    });
+  }
+
+  pbState.raf = requestAnimationFrame(pbLoop);
+}
+
+function pbSyncGridUi(gridOpen) {
+  const grid = document.getElementById('pb-filter-grid');
+  const main = document.querySelector('#photobooth .pb-main');
+  const btn = document.getElementById('pb-more');
+  if (grid) grid.classList.toggle('open', gridOpen);
+  if (main) main.classList.toggle('pb-grid-mode', gridOpen);
+  if (btn) btn.textContent = gridOpen ? 'Done' : 'Effects';
+}
+
+function setPbEffect(id) {
+  pbState.effect = id;
+  document.querySelectorAll('.pb-filter-grid .pb-filter-tile').forEach(t => {
+    t.classList.toggle('active', t.getAttribute('data-effect') === id);
+  });
+}
+
+function pbCapturePhoto() {
+  const video = document.getElementById('pb-video');
+  if (!video || video.readyState < 2) return;
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!vw) return;
+  const cap = document.createElement('canvas');
+  cap.width = vw;
+  cap.height = vh;
+  renderPbFrame(cap.getContext('2d'), video, pbState.effect, performance.now());
+  const stamp = 'photo-booth-' + Date.now() + '.png';
+  cap.toBlob(blob => {
+    if (!blob) return;
+    pbState.lastBlob = blob;
+    pbState.lastName = stamp;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = stamp;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    addDesktopStampFromDataUrl(cap.toDataURL('image/png'));
+  }, 'image/png', 0.92);
+}
+
+function pbStartCaptureCountdown() {
+  if (pbState.countdown) return;
+  const video = document.getElementById('pb-video');
+  if (!video || video.readyState < 2) return;
+  if (!video.videoWidth) return;
+
+  const overlay = document.getElementById('pb-countdown');
+  const takeBtn = document.getElementById('pb-take');
+  const moreBtn = document.getElementById('pb-more');
+  if (!overlay) {
+    pbCapturePhoto();
+    return;
+  }
+
+  const myGen = ++pbState.captureGen;
+  pbState.countdown = true;
+  if (takeBtn) takeBtn.disabled = true;
+  if (moreBtn) moreBtn.disabled = true;
+
+  overlay.classList.remove('pb-cd-flash');
+  overlay.textContent = '';
+  overlay.classList.add('pb-cd-visible');
+  overlay.setAttribute('aria-hidden', 'false');
+
+  const stepMs = 850;
+  [3, 2, 1].forEach((n, i) => {
+    setTimeout(() => {
+      if (myGen !== pbState.captureGen || !document.getElementById('photobooth')) return;
+      overlay.textContent = String(n);
+    }, i * stepMs);
+  });
+
+  setTimeout(() => {
+    if (myGen !== pbState.captureGen || !document.getElementById('photobooth')) return;
+    overlay.textContent = '';
+    overlay.classList.add('pb-cd-flash');
+    pbCapturePhoto();
+  }, 3 * stepMs);
+
+  setTimeout(() => {
+    if (myGen !== pbState.captureGen) return;
+    overlay.classList.remove('pb-cd-flash', 'pb-cd-visible');
+    overlay.setAttribute('aria-hidden', 'true');
+    pbState.countdown = false;
+    if (takeBtn) takeBtn.disabled = false;
+    if (moreBtn) moreBtn.disabled = false;
+  }, 3 * stepMs + 200);
+}
+
+function wirePhotoBoothUi() {
+  const grid = document.getElementById('pb-filter-grid');
+  const moreBtn = document.getElementById('pb-more');
+
+  if (moreBtn && grid) {
+    moreBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (pbState.countdown) return;
+      pbSyncGridUi(!grid.classList.contains('open'));
+    });
+    grid.querySelectorAll('.pb-filter-tile').forEach(tile => {
+      tile.addEventListener('click', e => {
+        e.stopPropagation();
+        if (pbState.countdown) return;
+        setPbEffect(tile.getAttribute('data-effect'));
+        pbSyncGridUi(false);
+      });
+    });
+    grid.addEventListener('click', e => {
+      if (e.target === grid) pbSyncGridUi(false);
+    });
+  }
+
+  document.getElementById('pb-take')?.addEventListener('click', pbStartCaptureCountdown);
+
+  document.getElementById('pb-save-dl')?.addEventListener('click', () => {
+    if (!pbState.lastBlob) {
+      pbStartCaptureCountdown();
+      return;
+    }
+    const url = URL.createObjectURL(pbState.lastBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = pbState.lastName || 'photo-booth.png';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  });
+}
+
+const PB_STAMPS_STORAGE_KEY = 'samos-desktop-stamps-v1';
+
+function saveDesktopStamps() {
+  const desk = document.getElementById('desktop');
+  if (!desk) return;
+  const items = [];
+  desk.querySelectorAll('.desktop-stamp[data-stamp-id]').forEach(el => {
+    const img = el.querySelector('img');
+    if (!img || !img.src) return;
+    items.push({
+      id: el.dataset.stampId,
+      x: el.offsetLeft,
+      y: el.offsetTop,
+      dataUrl: img.src
+    });
+  });
+  try {
+    localStorage.setItem(PB_STAMPS_STORAGE_KEY, JSON.stringify({ v: 1, stamps: items }));
+  } catch (err) {
+    if (err.name === 'QuotaExceededError' && items.length > 1) {
+      const victim = items.shift();
+      try {
+        localStorage.setItem(PB_STAMPS_STORAGE_KEY, JSON.stringify({ v: 1, stamps: items }));
+      } catch (err2) { /* still too large */ }
+      const victimEl = desk.querySelector('.desktop-stamp[data-stamp-id="' + victim.id + '"]');
+      if (victimEl) victimEl.remove();
+    }
+  }
+}
+
+function removeDesktopStampById(stampId) {
+  const desk = document.getElementById('desktop');
+  if (!desk || !stampId) return;
+  const el = Array.from(desk.querySelectorAll('.desktop-stamp')).find(s => s.dataset.stampId === stampId);
+  if (el) {
+    el.remove();
+    saveDesktopStamps();
+  }
+  const menu = document.getElementById('ctx-menu');
+  if (menu) menu.style.display = 'none';
+}
+
+function mountDesktopStamp(dataUrl, x, y, stampId) {
+  const desk = document.getElementById('desktop');
+  const icons = document.getElementById('desktop-icons');
+  if (!desk || !icons) return;
+  const stamp = document.createElement('div');
+  stamp.className = 'desktop-stamp';
+  stamp.dataset.stampId = stampId;
+  stamp.style.left = Math.round(x) + 'px';
+  stamp.style.top = Math.round(y) + 'px';
+  const img = document.createElement('img');
+  img.src = dataUrl;
+  img.alt = '';
+  stamp.appendChild(img);
+  desk.insertBefore(stamp, icons);
+}
+
+function restoreDesktopStamps() {
+  let raw;
+  try {
+    raw = localStorage.getItem(PB_STAMPS_STORAGE_KEY);
+  } catch (e) {
+    return;
+  }
+  if (!raw) return;
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch (e) {
+    return;
+  }
+  const list = data.stamps;
+  if (!Array.isArray(list) || !list.length) return;
+  list.forEach(s => {
+    if (s.id && s.dataUrl && typeof s.x === 'number' && typeof s.y === 'number') {
+      mountDesktopStamp(s.dataUrl, s.x, s.y, s.id);
+    }
+  });
+}
+
+let _pbStampDrag = null;
+
+function initStampPersistence() {
+  const desk = document.getElementById('desktop');
+  if (!desk || desk.dataset.pbStampsInit) return;
+  desk.dataset.pbStampsInit = '1';
+
+  desk.addEventListener('mousedown', e => {
+    const st = e.target.closest('.desktop-stamp');
+    if (!st || e.button !== 0) return;
+    _pbStampDrag = {
+      el: st,
+      ox: e.clientX,
+      oy: e.clientY,
+      ol: st.offsetLeft,
+      ot: st.offsetTop
+    };
+    e.preventDefault();
+    e.stopPropagation();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!_pbStampDrag) return;
+    const d = _pbStampDrag;
+    d.el.style.left = d.ol + (e.clientX - d.ox) + 'px';
+    d.el.style.top = d.ot + (e.clientY - d.oy) + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (_pbStampDrag) {
+      _pbStampDrag = null;
+      saveDesktopStamps();
+    }
+  });
+
+  restoreDesktopStamps();
+}
+
+function addDesktopStampFromDataUrl(dataUrl) {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const x = 24 + Math.random() * Math.max(80, w - 200);
+  const y = 36 + Math.random() * Math.max(80, h - 260);
+  const id = 'pb-stamp-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
+  mountDesktopStamp(dataUrl, x, y, id);
+  saveDesktopStamps();
+}
+
+function openPhotoBooth() {
+  const id = 'photobooth';
+  if (document.getElementById(id)) {
+    bringToFront(id);
+    return;
+  }
+  const gridTiles = PB_EFFECTS.map(e =>
+    `<button type="button" class="pb-filter-tile${e.id === 'none' ? ' active' : ''}" data-effect="${e.id}" aria-label="${e.name}">
+      <canvas width="${PB_TILE_W}" height="${PB_TILE_H}"></canvas>
+      <span>${e.name}</span>
+    </button>`
+  ).join('');
+
+  const content = `
+    <div class="photo-booth-layout">
+      <div class="pb-main">
+        <video id="pb-video" playsinline autoplay muted></video>
+        <canvas id="pb-canvas" width="640" height="480"></canvas>
+        <div class="pb-filter-grid" id="pb-filter-grid">${gridTiles}</div>
+        <div id="pb-countdown" class="pb-countdown-overlay" aria-hidden="true"></div>
+        <div id="pb-cam-err" class="pb-cam-err" role="alert"></div>
+        <button type="button" class="pb-more-floating" id="pb-more">Effects</button>
+      </div>
+      <div class="pb-toolbar">
+        <button type="button" class="pb-take" id="pb-take" title="Take Photo">
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M9 4h6l1.83 2H20c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V8c0-1.1.9-2 2-2h3.17L9 4zm3 15c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm0-8c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z"/></svg>
+        </button>
+        <button type="button" class="pb-save" id="pb-save-dl">Save</button>
+      </div>
+    </div>
+  `;
+
+  createWindow({
+    id, title: 'Photo Booth', icon: '📷',
+    x: 90, y: 52, w: 760, h: 540, content,
+    className: 'photo-booth-window'
+  });
+
+  const video = document.getElementById('pb-video');
+  pbState.effect = 'none';
+  pbState.stream = null;
+  pbSyncGridUi(false);
+  setPbEffect('none');
+
+  window._pbCleanup = () => {
+    if (pbState.raf) cancelAnimationFrame(pbState.raf);
+    pbState.raf = null;
+    pbState.captureGen++;
+    const o = document.getElementById('pb-countdown');
+    if (o) {
+      o.classList.remove('pb-cd-flash', 'pb-cd-visible');
+      o.textContent = '';
+    }
+    pbState.countdown = false;
+    if (pbState.stream) {
+      pbState.stream.getTracks().forEach(t => t.stop());
+      pbState.stream = null;
+    }
+  };
+
+  wirePhotoBoothUi();
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+    .then(stream => {
+      pbState.stream = stream;
+      video.srcObject = stream;
+      video.play();
+      pbState.raf = requestAnimationFrame(pbLoop);
+    })
+    .catch(() => {
+      const err = document.getElementById('pb-cam-err');
+      if (err) {
+        err.textContent = 'Camera unavailable';
+        err.classList.add('pb-cam-err-visible');
+      }
+    });
+}
+
+function photosAlbumSidebarHtml() {
+  return PHOTOS_ALBUMS.map((a, i) => {
+    const safe = a.name.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    return `<button type="button" class="photos-album${i === 0 ? ' active' : ''}" data-album-id="${a.id}">
+      <span>${safe}</span><span class="photos-count">${a.photos.length}</span>
+    </button>`;
+  }).join('');
+}
+
+function photosSelectAlbum(albumId) {
+  const album = PHOTOS_ALBUMS.find(a => a.id === albumId);
+  const grid = document.getElementById('photos-grid');
+  const label = document.getElementById('photos-album-label');
+  const meta = document.getElementById('photos-meta');
+  const empty = document.getElementById('photos-empty');
+  const lb = document.getElementById('photos-lightbox');
+  const lbImg = document.getElementById('photos-lightbox-img');
+  if (lb && !lb.hasAttribute('hidden')) { lb.setAttribute('hidden', ''); if (lbImg) lbImg.src = ''; }
+  if (!grid || !album) return;
+  if (label) label.textContent = album.name;
+  if (meta) meta.textContent = album.photos.length ? `${album.photos.length} ${album.photos.length === 1 ? 'item' : 'items'}` : '';
+  grid.innerHTML = '';
+  if (!album.photos.length) {
+    grid.style.display = 'none';
+    if (empty) empty.hidden = false;
+    return;
+  }
+  grid.style.display = '';
+  if (empty) empty.hidden = true;
+  const frag = document.createDocumentFragment();
+  album.photos.forEach((src, i) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'photos-thumb';
+    btn.setAttribute('aria-label', 'Photo ' + (i + 1));
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = '';
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    btn.appendChild(img);
+    btn.addEventListener('click', () => {
+      if (!lb || !lbImg) return;
+      lbImg.src = src;
+      lb.removeAttribute('hidden');
+    });
+    frag.appendChild(btn);
+  });
+  grid.appendChild(frag);
+}
+
+function wirePhotosApp() {
+  const list = document.getElementById('photos-album-list');
+  const lb = document.getElementById('photos-lightbox');
+  const lbImg = document.getElementById('photos-lightbox-img');
+  const closeLb = () => {
+    if (lb) lb.setAttribute('hidden', '');
+    if (lbImg) lbImg.src = '';
+  };
+  if (list) {
+    list.querySelectorAll('.photos-album').forEach(btn => {
+      btn.addEventListener('click', () => {
+        list.querySelectorAll('.photos-album').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        photosSelectAlbum(btn.getAttribute('data-album-id'));
+      });
+    });
+  }
+  const closeBtn = document.querySelector('.photos-lightbox-close');
+  if (closeBtn) closeBtn.addEventListener('click', e => { e.stopPropagation(); closeLb(); });
+  if (lb) {
+    lb.addEventListener('click', e => { if (e.target === lb) closeLb(); });
+  }
+}
+
+function openPhotos() {
+  const id = 'photos';
+  if (document.getElementById(id)) {
+    bringToFront(id);
+    return;
+  }
+  const firstId = PHOTOS_ALBUMS[0]?.id || '';
+  const content = `
+    <div class="photos-app">
+      <aside class="photos-sidebar">
+        <div class="photos-sidebar-title">Library</div>
+        <div class="photos-album-list" id="photos-album-list">${photosAlbumSidebarHtml()}</div>
+      </aside>
+      <main class="photos-main">
+        <div class="photos-toolbar">
+          <span id="photos-album-label">${(PHOTOS_ALBUMS[0]?.name || 'Photos').replace(/&/g, '&amp;').replace(/</g, '&lt;')}</span>
+          <span class="photos-meta" id="photos-meta"></span>
+        </div>
+        <div class="photos-grid" id="photos-grid"></div>
+        <div class="photos-empty" id="photos-empty" hidden>
+          This album is empty. Add image URLs to the <code>photos</code> array for this album in <code>PHOTOS_ALBUMS</code> (<code>samos.html</code>).
+        </div>
+      </main>
+      <div class="photos-lightbox" id="photos-lightbox" hidden>
+        <button type="button" class="photos-lightbox-close" aria-label="Close">&times;</button>
+        <img id="photos-lightbox-img" alt="" />
+      </div>
+    </div>
+  `;
+  createWindow({
+    id, title: 'Photos', icon: '🖼️',
+    x: 110, y: 52, w: 760, h: 540,
+    content, className: 'photos-window'
+  });
+  wirePhotosApp();
+  photosSelectAlbum(firstId);
+}
+
+/* ============================================================
+   FINDER
+   ============================================================ */
+function openFinder() {
+  const id = 'finder';
+  if (document.getElementById(id)) { bringToFront(id); return; }
+  const esc = s => String(s).replace(/"/g, '&quot;');
+  const files = DESKTOP_ITEMS.map(p => {
+    const find = ((p.finderTerms || '') + ' ' + p.name + ' ' + (p.type || '')).toLowerCase();
+    return `
+    <div class="finder-file" data-finder-id="${p.id}" data-find="${esc(find)}">
+      <div class="finder-file-icon">${desktopItemIconMarkup(p)}</div>
+      <div class="finder-file-name">${p.name}</div>
+    </div>`;
+  }).join('');
+
+  const content = `
+    <div style="display:flex;flex-direction:column;height:100%;">
+      <div class="finder-search-wrap">
+        <input type="search" class="finder-search" id="finder-search-input" placeholder="Search projects, topics, places…" autocomplete="off">
+      </div>
+      <div class="window-sidebar-row" style="flex:1;overflow:hidden;">
+        <div class="finder-sidebar">
+          <div class="finder-section-label">Favorites</div>
+          <div class="finder-sidebar-item active">🏠 Home</div>
+          <div class="finder-sidebar-item">🖥️ Desktop</div>
+          <div class="finder-sidebar-item">📁 Sites</div>
+          <div class="finder-section-label">Devices</div>
+          <div class="finder-sidebar-item">💾 Sam OS</div>
+        </div>
+        <div class="finder-grid" id="finder-grid">${files}</div>
+      </div>
+      <div class="finder-status-bar"><span id="finder-count">${DESKTOP_ITEMS.length}</span> items</div>
+    </div>
+  `;
+
+  createWindow({
+    id, title: 'Finder — Places',
+    x: 96, y: 48, w: 580, h: 420, content
+  });
+
+  setTimeout(() => {
+    const inp = document.getElementById('finder-search-input');
+    const grid = document.getElementById('finder-grid');
+    const countEl = document.getElementById('finder-count');
+    const runFilter = () => {
+      const q = (inp.value || '').toLowerCase().replace(/^\s+|\s+$/g, '');
+      let n = 0;
+      grid.querySelectorAll('.finder-file').forEach(row => {
+        const hay = row.getAttribute('data-find') || '';
+        const show = !q || hay.includes(q);
+        row.classList.toggle('hidden', !show);
+        if (show) n++;
+      });
+      if (countEl) countEl.textContent = n;
+    };
+    inp.addEventListener('input', runFilter);
+    inp.focus();
+    grid.querySelectorAll('.finder-file').forEach(row => {
+      row.addEventListener('dblclick', () => openDesktopItemById(row.getAttribute('data-finder-id')));
+    });
+  }, 40);
+}
+
+function scatterDesktopPositions(n) {
+  const ICON_W = 138, ICON_H = 150;
+  const top = 28, bot = 110, L = 10, R = 10;
+  const positions = [];
+  const maxW = Math.max(40, window.innerWidth - L - R - ICON_W);
+  const maxH = Math.max(40, window.innerHeight - top - bot - ICON_H);
+  for (let i = 0; i < n; i++) {
+    let x, y, ok = false;
+    for (let t = 0; t < 90; t++) {
+      x = L + Math.random() * maxW;
+      y = top + Math.random() * maxH;
+      ok = positions.every(([px, py]) => Math.hypot(x - px, y - py) > 90);
+      if (ok) break;
+    }
+    positions.push([x, y]);
+  }
+  return positions;
+}
+
+function renderDesktopIcons() {
+  const container = document.getElementById('desktop-icons');
+  container.innerHTML = '';
+  const pos = scatterDesktopPositions(DESKTOP_ITEMS.length);
+  DESKTOP_ITEMS.forEach((p, i) => {
+    const icon = document.createElement('div');
+    icon.className = 'desktop-icon';
+    icon.style.left = pos[i][0] + 'px';
+    icon.style.top = pos[i][1] + 'px';    
+    const labelHtml = p.priority
+      ? `<div class="icon-label-row"><span class="icon-priority-dot" title="Featured" aria-hidden="true"></span><div class="icon-label">${p.name}</div></div>`
+      : `<div class="icon-label">${p.name}</div>`;
+    icon.innerHTML = `
+      <div class="icon-img" style="background:${p.color}">${desktopItemIconMarkup(p)}</div>
+      ${labelHtml}
+    `;
+    icon.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      document.querySelectorAll('.desktop-icon').forEach(x => x.classList.remove('selected'));
+      icon.classList.add('selected');
+      desktopIconDrag = {
+        el: icon, item: p, sl: icon.offsetLeft, st: icon.offsetTop,
+        sx: e.clientX, sy: e.clientY, moved: false
+      };
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    container.appendChild(icon);
+  });
+}
+
+/* ============================================================
+   DOCK
+   ============================================================ */
+function openDockQuickLink(url) {
+  if (!url) return;
+  try {
+    const u = new URL(url);
+    const h = u.hostname.replace(/^www\./i, '').toLowerCase();
+    const useSocialSamium = h === 'x.com' || h === 'twitter.com' || h === 'instagram.com' || h === 'linkedin.com';
+    if (useSocialSamium) {
+      openSamiumSocial(url);
+      return;
+    }
+    samiumOpenUrlInNewTab(url);
+  } catch (e) {
+    samiumOpenUrlInNewTab(url);
+  }
+}
+
+document.querySelectorAll('.dock-icon').forEach(icon => {
+  icon.addEventListener('click', () => {
+    icon.classList.add('bouncing');
+    setTimeout(() => icon.classList.remove('bouncing'), 1200);
+    const dockUrl = icon.dataset.dockUrl;
+    if (dockUrl) {
+      if (icon.dataset.dockFile) {
+        openDesktopResumePdf(dockUrl);
+        return;
+      }
+      openDockQuickLink(dockUrl);
+      return;
+    }
+    const app = icon.dataset.app;
+    switch(app) {
+      case 'finder': openFinder(); break;
+      case 'samium': openSamium(); break;
+      case 'stickies': openStickies(); break;
+      case 'calculator': openCalculator(); break;
+      case 'clock': openClock(); break;
+      case 'snake': openSnake(); break;
+      case 'photobooth': openPhotoBooth(); break;
+      case 'photos': openPhotos(); break;
+    }
+  });
+});
+
+/* ============================================================
+   MENUBAR CLOCK
+   ============================================================ */
+function updateMenuClock() {
+  const el = document.getElementById('mb-clock');
+  if (!el) return;
+  const now = new Date();
+  el.textContent = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
+  setTimeout(updateMenuClock, 1000);
+}
+
+let openMbKey = null;
+function closeAllMenus() {
+  document.querySelectorAll('.mb-dropdown').forEach(d => d.classList.remove('open'));
+  openMbKey = null;
+  toggleControlCenter(false);
+}
+
+function positionMenubarDropdown(dd, anchor) {
+  const r = anchor.getBoundingClientRect();
+  const w = dd.offsetWidth || 220;
+  dd.style.left = Math.max(6, Math.min(r.left, window.innerWidth - w - 6)) + 'px';
+  dd.style.top = r.bottom + 'px';
+}
+
+function toggleMenubarMenu(key, anchor) {
+  const dd = document.getElementById('mb-dropdown-' + key);
+  if (!dd) return;
+  if (openMbKey === key) {
+    closeAllMenus();
+    return;
+  }
+  closeAllMenus();
+  dd.classList.add('open');
+  openMbKey = key;
+  requestAnimationFrame(() => positionMenubarDropdown(dd, anchor));
+}
+
+function initMenubar() {
+  const apple = document.getElementById('mb-dropdown-apple');
+  apple.innerHTML = `
+    <div class="mb-dd-item" onclick="closeAllMenus();openSamium('https://sambrott.com');">🏔️ Open portfolio</div>
+    <div class="mb-dd-sep"></div>
+    <div class="mb-dd-item" onclick="closeAllMenus();openPhotoBooth();">📷 Photo Booth</div>
+    <div class="mb-dd-item" onclick="closeAllMenus();openPhotos();">🖼️ Photos</div>
+    <div class="mb-dd-sep"></div>
+    <div class="mb-dd-item muted">Sleep… · Restart… (stub)</div>
+  `;
+
+  document.getElementById('mb-dropdown-finder').innerHTML = `
+    <div class="mb-dd-item" onclick="closeAllMenus();openFinder();">New Finder Window</div>
+    <div class="mb-dd-item" onclick="closeAllMenus();openFinder();">🔍 Search places…</div>
+  `;
+
+  const stub = label => `<div class="mb-dd-item muted">${label}</div>`;
+  document.getElementById('mb-dropdown-file').innerHTML = stub('New Folder') + stub('Open…') + `<div class="mb-dd-sep"></div>` + stub('Close');
+  document.getElementById('mb-dropdown-edit').innerHTML = stub('Undo') + stub('Cut') + stub('Copy') + stub('Paste');
+  document.getElementById('mb-dropdown-view').innerHTML = `
+    <div class="mb-dd-item" onclick="closeAllMenus();changeWallpaper();">🎨 Rotate wallpaper</div>
+    <div class="mb-dd-item" onclick="closeAllMenus();document.getElementById('desktop')?.style.removeProperty('filter');document.getElementById('cc-bright')&&(document.getElementById('cc-bright').value=100);">Reset brightness</div>
+  `;
+  document.getElementById('mb-dropdown-go').innerHTML = `
+    <div class="mb-dd-item" onclick="closeAllMenus();openComputer();">🏠 Home / Portfolio</div>
+    <div class="mb-dd-item" onclick="closeAllMenus();openPhotos();">🖼️ Photos</div>
+    <div class="mb-dd-item" onclick="closeAllMenus();openSamium('https://www.youtube.com');">🎬 YouTube</div>
+  `;
+  document.getElementById('mb-dropdown-window').innerHTML = `
+    <div class="mb-dd-item" onclick="closeAllMenus();if(activeWin)bringToFront(activeWin);">Bring All to Front</div>
+    <div class="mb-dd-item" onclick="closeAllMenus();document.querySelectorAll('.window').forEach(w=>{w.remove();});windows={};activeWin=null;syncMenubarApplicationName();">Close All Windows</div>
+  `;
+  document.getElementById('mb-dropdown-help').innerHTML = `
+    <div class="mb-dd-item" onclick="closeAllMenus();openFinder();">Finder & places…</div>
+    <div class="mb-dd-item" onclick="closeAllMenus();openSamium();">Open Samium</div>
+  `;
+
+  document.getElementById('mb-apple').addEventListener('click', e => { e.stopPropagation(); toggleMenubarMenu('apple', e.currentTarget); });
+  document.querySelectorAll('.menubar-item[data-menu]').forEach(el => {
+    el.addEventListener('click', e => { e.stopPropagation(); toggleMenubarMenu(el.dataset.menu, el); });
+  });
+
+  document.getElementById('mb-cc-toggle').addEventListener('click', e => { e.stopPropagation(); closeAllMenus(); toggleControlCenter(); });
+  document.getElementById('mb-battery').addEventListener('click', e => { e.stopPropagation(); toggleControlCenter(); });
+  document.getElementById('mb-wifi').addEventListener('click', e => { e.stopPropagation(); toggleControlCenter(); });
+
+  document.getElementById('control-center').addEventListener('click', e => e.stopPropagation());
+
+  syncMenubarApplicationName();
+}
+
+function toggleControlCenter(force) {
+  const cc = document.getElementById('control-center');
+  const btn = document.getElementById('mb-cc-toggle');
+  const shouldOpen = force !== undefined ? force : !cc.classList.contains('open');
+  cc.classList.toggle('open', shouldOpen);
+  if (btn) btn.classList.toggle('cc-active', shouldOpen);
+}
+
+function openComputer() {
+  openProjectDetailWindow(DESKTOP_ITEMS.find(x => x.id === 'portfolio') || DESKTOP_ITEMS[0]);
+}
+
+/* ============================================================
+   CONTEXT MENU
+   ============================================================ */
+const ctx = document.getElementById('ctx-menu');
+document.getElementById('desktop').addEventListener('contextmenu', e => {
+  e.preventDefault();
+  const stampEl = e.target.closest('.desktop-stamp');
+  if (stampEl && stampEl.dataset.stampId) {
+    const sid = stampEl.dataset.stampId;
+    ctx.innerHTML = `
+      <div class="ctx-label">Desktop photo</div>
+      <div class="ctx-separator"></div>
+      <div class="ctx-item ctx-stamp-delete" role="menuitem">🗑️ Delete image</div>
+    `;
+    const del = ctx.querySelector('.ctx-stamp-delete');
+    if (del) {
+      del.addEventListener('click', ev => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        removeDesktopStampById(sid);
+      });
+    }
+  } else {
+    ctx.innerHTML = `
+    <div class="ctx-label">Sam OS Desktop</div>
+    <div class="ctx-separator"></div>
+    <div class="ctx-item" onclick="openFinder()">🗂️ Open Finder</div>
+    <div class="ctx-item" onclick="openSamium()">🌐 Open Samium</div>
+    <div class="ctx-item" onclick="openPhotoBooth()">📷 Photo Booth</div>
+    <div class="ctx-item" onclick="openPhotos()">🖼️ Photos</div>
+    <div class="ctx-item" onclick="openStickies()">📝 New Sticky Note</div>
+    <div class="ctx-separator"></div>
+    <div class="ctx-item" onclick="openCalculator()">🔢 Calculator</div>
+    <div class="ctx-item" onclick="openClock()">🕐 World Clock</div>
+    <div class="ctx-item" onclick="openSnake()">🐍 Snake</div>
+    <div class="ctx-separator"></div>
+    <div class="ctx-item" onclick="changeWallpaper()">🎨 Change Wallpaper</div>
+  `;
+  }
+  ctx.style.display = 'block';
+  ctx.style.left = Math.min(e.clientX, window.innerWidth - 200) + 'px';
+  ctx.style.top = Math.min(e.clientY, window.innerHeight - 200) + 'px';
+});
+document.addEventListener('click', e => {
+  ctx.style.display = 'none';
+  if (e.target.closest('#menubar') || e.target.closest('.mb-dropdown') || e.target.closest('#control-center')) return;
+  closeAllMenus();
+});
+
+/* ============================================================
+   WALLPAPER CHANGER (tap-through: photo is index 0, then themes)
+   ============================================================ */
+const WALLPAPER_IMAGE = 'samos-wallpaper.png';
+const WALLPAPER_GRADIENTS = [
+  // Mountain Lion–style galaxy
+  `radial-gradient(ellipse at 30% 20%, rgba(90,130,200,0.4) 0%, transparent 50%),
+   radial-gradient(ellipse at 70% 80%, rgba(60,80,160,0.5) 0%, transparent 50%),
+   radial-gradient(ellipse at 50% 50%, rgba(20,30,80,0.8) 0%, transparent 80%)`,
+  `linear-gradient(180deg, #0a0a1a 0%, #0d2a20 40%, #082818 70%, #0a0a1a 100%)`,
+  `linear-gradient(180deg, #1a0020 0%, #4a0a30 30%, #e05520 70%, #f0a020 100%)`,
+  `linear-gradient(180deg, #001830 0%, #003060 40%, #0050a0 100%)`,
+];
+let wallpaperIdx = 0;
+const wallpaperTotal = 1 + WALLPAPER_GRADIENTS.length;
+function changeWallpaper() {
+  wallpaperIdx = (wallpaperIdx + 1) % wallpaperTotal;
+  const d = document.getElementById('desktop');
+  if (wallpaperIdx === 0) {
+    d.style.backgroundImage = `url('${WALLPAPER_IMAGE}')`;
+    d.style.backgroundSize = 'cover';
+    d.style.backgroundPosition = 'center center';
+  } else {
+    d.style.backgroundImage = WALLPAPER_GRADIENTS[wallpaperIdx - 1];
+    d.style.backgroundSize = '';
+    d.style.backgroundPosition = '';
+  }
+}
+
+/* ============================================================
+   DESELECT ICONS
+   ============================================================ */
+document.getElementById('desktop').addEventListener('click', e => {
+  if (!e.target.closest('.desktop-icon') && !e.target.closest('.desktop-stamp') && !e.target.closest('.window') && !e.target.closest('#dock') && !e.target.closest('#menubar')) {
+    document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
+  }
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderDesktopIcons();
+initStampPersistence();
+initMenubar();
+updateMenuClock();
+</script>
+</body>
+</html>
