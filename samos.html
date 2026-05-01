@@ -1446,7 +1446,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
 }
 .pb-cam-err.pb-cam-err-visible { display: block; }
 
-/* Photos (albums + grid, macOS-style) */
+/* Photos — vertical feed; images span main column width */
 .photos-window .window-body {
   padding: 0 !important;
   background: #1c1c1e !important;
@@ -1459,57 +1459,16 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
   color: #f5f5f7;
   font-size: 13px;
   position: relative;
-}
-.photos-sidebar {
-  width: 168px;
-  flex-shrink: 0;
-  background: linear-gradient(180deg, #2c2c2e 0%, #1c1c1e 100%);
-  border-right: 1px solid rgba(255,255,255,0.08);
-  display: flex;
   flex-direction: column;
-  padding: 10px 8px;
 }
-.photos-sidebar-title {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: rgba(255,255,255,0.45);
-  padding: 4px 8px 10px;
-}
-.photos-album-list { display: flex; flex-direction: column; gap: 2px; }
-.photos-album {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  border: none;
-  border-radius: 6px;
-  padding: 7px 10px;
-  font-size: 13px;
-  color: #f5f5f7;
-  background: transparent;
-  cursor: pointer;
-  text-align: left;
-  font-family: inherit;
-}
-.photos-album:hover { background: rgba(255,255,255,0.08); }
-.photos-album.active {
-  background: rgba(10, 132, 255, 0.35);
-  box-shadow: 0 0 0 1px rgba(10, 132, 255, 0.4);
-}
-.photos-count {
-  font-size: 11px;
-  color: rgba(255,255,255,0.4);
-  font-variant-numeric: tabular-nums;
-}
+
 .photos-main {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
   background: #000;
+  width: 100%;
 }
 .photos-toolbar {
   flex-shrink: 0;
@@ -1519,33 +1478,40 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
   gap: 10px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
   background: #1c1c1e;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 .photos-toolbar #photos-album-label { font-weight: 600; font-size: 15px; }
 .photos-meta { font-size: 12px; color: rgba(255,255,255,0.45); }
 .photos-grid {
   flex: 1;
   overflow: auto;
-  padding: 10px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
-  gap: 8px;
-  align-content: start;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  align-items: stretch;
 }
 .photos-thumb {
   position: relative;
-  aspect-ratio: 1;
+  width: 100%;
   padding: 0;
+  margin: 0;
   border: none;
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
   cursor: zoom-in;
-  background: #2c2c2e;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+  background: #0a0a0a;
 }
-.photos-thumb:focus-visible { outline: 2px solid #0a84ff; outline-offset: 2px; }
+.photos-thumb + .photos-thumb {
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.photos-thumb:focus-visible { outline: 2px solid #0a84ff; outline-offset: -2px; z-index: 1; position: relative; }
 .photos-thumb img {
-  width: 100%; height: 100%;
-  object-fit: cover;
+  width: 100%;
+  height: auto;
+  vertical-align: top;
   display: block;
   pointer-events: none;
 }
@@ -1930,25 +1896,46 @@ function desktopItemIconMarkup(p) {
 const PROJECTS = DESKTOP_ITEMS;
 
 /**
- * Photos app — add albums and image URLs here (HTTPS links to JPG/PNG/GIF/WebP, etc.).
- * Empty `photos: []` albums appear in the sidebar; fill them when you are ready.
+ * Photos app — JPEG/PNG/etc. beside samos.html under photos/… (see repo photos/ folder).
  */
 const PHOTOS_ALBUMS = [
   {
-    id: 'portfolio-picks',
-    name: 'Portfolio picks',
+    id: 'library',
+    name: 'Library',
     photos: [
-      'https://res.cloudinary.com/dz9d0grpe/image/upload/v1770047264/DSC_0127_copy_arcwlr.jpg',
-      'https://res.cloudinary.com/dz9d0grpe/image/upload/v1770047264/Screenshot_2025-11-12_at_10.32.12_PM_c5qqhi.png',
-      'https://res.cloudinary.com/dz9d0grpe/image/upload/v1770047247/coqui%CC%81_insta_2_copy_2_vcomcm.jpg',
-      'https://res.cloudinary.com/dz9d0grpe/image/upload/v1770047245/sea_turtle_insta_2_copy_2_hzzyhm.jpg',
-      'https://res.cloudinary.com/dz9d0grpe/image/upload/v1770047247/Sun_God_2_copy_2_iks9xw.jpg',
-      'https://res.cloudinary.com/dz9d0grpe/image/upload/v1772918552/green_glasses_tt8fwv.jpg'
+      'photos/000288960001.jpeg',
+      'photos/000288960029.jpeg',
+      'photos/000288970001.png',
+      'photos/000288970005.jpg',
+      'photos/000288970006.jpg',
+      'photos/000288970007.jpg',
+      'photos/000288970016.jpg',
+      'photos/000288970024.jpg',
+      'photos/000288970026.jpeg',
+      'photos/000288970027.jpg',
+      'photos/000288970033.jpg',
+      'photos/000288970034.jpeg',
+      'photos/000288970035.jpeg',
+      'photos/000294800006.jpg',
+      'photos/000294800007.jpg',
+      'photos/000294800018.jpg',
+      'photos/000294800022.jpg',
+      'photos/000294800024.jpg',
+      'photos/000294800028.jpg',
+      'photos/000305560004.jpg',
+      'photos/000305560011.jpg',
+      'photos/000305560012.jpg',
+      'photos/000305560014.jpg',
+      'photos/000305560015.jpeg',
+      'photos/000305560018.jpg',
+      'photos/IMG_9169.JPG',
+      'photos/IMG_9175.JPG',
+      'photos/IMG_9176.JPG',
+      'photos/IMG_9177.JPG',
+      'photos/IMG_9178.JPG',
+      'photos/IMG_9180.JPG'
     ]
-  },
-  { id: 'travel', name: 'Travel', photos: [] },
-  { id: 'experiments', name: 'Experiments', photos: [] },
-  { id: 'archive', name: 'Archive', photos: [] }
+  }
 ];
 
 const SAMIUM_ID = 'samium';
@@ -4041,15 +4028,6 @@ function openPhotoBooth() {
     });
 }
 
-function photosAlbumSidebarHtml() {
-  return PHOTOS_ALBUMS.map((a, i) => {
-    const safe = a.name.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-    return `<button type="button" class="photos-album${i === 0 ? ' active' : ''}" data-album-id="${a.id}">
-      <span>${safe}</span><span class="photos-count">${a.photos.length}</span>
-    </button>`;
-  }).join('');
-}
-
 function photosSelectAlbum(albumId) {
   const album = PHOTOS_ALBUMS.find(a => a.id === albumId);
   const grid = document.getElementById('photos-grid');
@@ -4061,7 +4039,7 @@ function photosSelectAlbum(albumId) {
   if (lb && !lb.hasAttribute('hidden')) { lb.setAttribute('hidden', ''); if (lbImg) lbImg.src = ''; }
   if (!grid || !album) return;
   if (label) label.textContent = album.name;
-  if (meta) meta.textContent = album.photos.length ? `${album.photos.length} ${album.photos.length === 1 ? 'item' : 'items'}` : '';
+  if (meta) meta.textContent = album.photos.length ? `${album.photos.length} ${album.photos.length === 1 ? 'photo' : 'photos'}` : '';
   grid.innerHTML = '';
   if (!album.photos.length) {
     grid.style.display = 'none';
@@ -4093,22 +4071,12 @@ function photosSelectAlbum(albumId) {
 }
 
 function wirePhotosApp() {
-  const list = document.getElementById('photos-album-list');
   const lb = document.getElementById('photos-lightbox');
   const lbImg = document.getElementById('photos-lightbox-img');
   const closeLb = () => {
     if (lb) lb.setAttribute('hidden', '');
     if (lbImg) lbImg.src = '';
   };
-  if (list) {
-    list.querySelectorAll('.photos-album').forEach(btn => {
-      btn.addEventListener('click', () => {
-        list.querySelectorAll('.photos-album').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        photosSelectAlbum(btn.getAttribute('data-album-id'));
-      });
-    });
-  }
   const closeBtn = document.querySelector('.photos-lightbox-close');
   if (closeBtn) closeBtn.addEventListener('click', e => { e.stopPropagation(); closeLb(); });
   if (lb) {
@@ -4125,10 +4093,6 @@ function openPhotos() {
   const firstId = PHOTOS_ALBUMS[0]?.id || '';
   const content = `
     <div class="photos-app">
-      <aside class="photos-sidebar">
-        <div class="photos-sidebar-title">Library</div>
-        <div class="photos-album-list" id="photos-album-list">${photosAlbumSidebarHtml()}</div>
-      </aside>
       <main class="photos-main">
         <div class="photos-toolbar">
           <span id="photos-album-label">${(PHOTOS_ALBUMS[0]?.name || 'Photos').replace(/&/g, '&amp;').replace(/</g, '&lt;')}</span>
@@ -4136,7 +4100,7 @@ function openPhotos() {
         </div>
         <div class="photos-grid" id="photos-grid"></div>
         <div class="photos-empty" id="photos-empty" hidden>
-          This album is empty. Add image URLs to the <code>photos</code> array for this album in <code>PHOTOS_ALBUMS</code> (<code>samos.html</code>).
+          This album is empty. Add files to <code>photos/</code> and list paths in <code>PHOTOS_ALBUMS</code> in <code>samos.html</code>.
         </div>
       </main>
       <div class="photos-lightbox" id="photos-lightbox" hidden>
@@ -4147,7 +4111,7 @@ function openPhotos() {
   `;
   createWindow({
     id, title: 'Photos', icon: '🖼️',
-    x: 110, y: 52, w: 760, h: 540,
+    x: 80, y: 48, w: 640, h: 580,
     content, className: 'photos-window'
   });
   wirePhotosApp();
