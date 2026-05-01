@@ -796,6 +796,25 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
   background: linear-gradient(180deg, #dbeaff 0%, #c8dcf5 100%);
   border-color: rgba(10,100,200,0.45);
 }
+/* Red “featured” dot on the Projects folder chip (matches desktop badge), not on each dropdown row. */
+.browser-bm-folder-btn--featured {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+.browser-bm-folder-btn--featured .browser-bm-folder-btn-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.browser-bm-folder-btn--featured .icon-priority-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  margin-top: 0;
+}
 .browser-bm-folder-menu {
   min-width: 180px;
   max-width: 280px;
@@ -1989,6 +2008,9 @@ function desktopItemIconMarkup(p) {
 
 const PROJECTS = DESKTOP_ITEMS;
 
+/** Shown as scattered icons under #desktop — Time Machine is dock-only (`data-app="timemachine"`). */
+const DESKTOP_ICON_ITEMS = DESKTOP_ITEMS.filter(p => p.id !== 'time-machine');
+
 /**
  * Photos app — files in photos/. Albums split for the sidebar (edit lists as you like).
  */
@@ -2041,45 +2063,42 @@ const SAMIUM_ID = 'samium';
 const SAMIUM_SOCIAL_ID = 'samium-social';
 
 /**
- * Samium bookmark bar — folder buttons; items use data-url + JS (no broken onclick quotes).
+ * Samium bookmark bar — sourced from DESKTOP_ITEMS where possible so microsites stay in sync.
+ * Order: Projects (featured / red-dot items) → Microsites (other web desktops) → Social → Misc.
  */
-const SAMIUM_BOOKMARK_GROUPS = [
-  {
-    id: 'work',
-    label: 'Work',
-    items: [
-      { label: 'Forma', url: 'https://www.forma.cool/' },
-      { label: 'Overprint', url: 'https://overprint.design/' },
-      { label: 'Portfolio', url: 'https://sambrott.com/' }
-    ]
-  },
-  {
-    id: 'projects',
-    label: 'Projects',
-    items: [
-      { label: 'The Fridge', url: 'https://fridge-delta-one.vercel.app/' },
-      { label: 'Fruit World', url: 'https://fruit-world-eight.vercel.app/' }
-    ]
-  },
-  {
-    id: 'reference',
-    label: 'Watch & read',
-    items: [
-      { label: 'Wikipedia', url: 'https://www.wikipedia.org/' },
-      { label: 'YouTube', url: 'https://www.youtube.com/' }
-    ]
-  },
-  {
-    id: 'social',
-    label: 'Social',
-    items: [
-      { label: 'GitHub', url: 'https://github.com/sambrott' },
-      { label: 'X', url: 'https://x.com/sam__brott' },
-      { label: 'Instagram', url: 'https://www.instagram.com/sam.brott/' },
-      { label: 'LinkedIn', url: 'https://www.linkedin.com/in/sam-brott-970828155/' }
-    ]
-  }
-];
+const SAMIUM_BOOKMARK_GROUPS = (() => {
+  const webDesktop = DESKTOP_ITEMS.filter(p => p.id !== 'time-machine' && p.url);
+  return [
+    {
+      id: 'projects',
+      label: 'Projects',
+      items: webDesktop.filter(p => p.priority === true).map(p => ({ label: p.name, url: p.url }))
+    },
+    {
+      id: 'microsites',
+      label: 'Microsites',
+      items: webDesktop.filter(p => !p.priority).map(p => ({ label: p.name, url: p.url }))
+    },
+    {
+      id: 'social',
+      label: 'Social',
+      items: [
+        { label: 'GitHub', url: 'https://github.com/sambrott' },
+        { label: 'X', url: 'https://x.com/sam__brott' },
+        { label: 'Instagram', url: 'https://www.instagram.com/sam.brott/' },
+        { label: 'LinkedIn', url: 'https://www.linkedin.com/in/sam-brott-970828155/' }
+      ]
+    },
+    {
+      id: 'misc',
+      label: 'Misc',
+      items: [
+        { label: 'reality check', url: 'https://www.urbandictionary.com/define.php?term=Graphic+designer' },
+        { label: 'Wikipedia', url: 'https://en.wikipedia.org/wiki/Lion' }
+      ]
+    }
+  ];
+})();
 
 const samiumStates = {};
 function ensureSamiumState(winId) {
@@ -2607,8 +2626,15 @@ function samiumEscapeAttr(s) {
 function samiumBookmarksBarHtml() {
   return SAMIUM_BOOKMARK_GROUPS.map(g => {
     const glab = samiumEscapeAttr(g.label);
+    const isProjects = g.id === 'projects';
+    const btnClass = isProjects
+      ? 'browser-bm-folder-btn browser-bm-folder-btn--featured'
+      : 'browser-bm-folder-btn';
+    const btnInner = isProjects
+      ? `<span class="icon-priority-dot" title="Featured" aria-hidden="true"></span><span class="browser-bm-folder-btn-text">${glab} ▾</span>`
+      : `${glab} ▾`;
     return `<div class="browser-bm-folder" data-bm-folder="${samiumEscapeAttr(g.id)}">
-      <button type="button" class="browser-bm-folder-btn" aria-expanded="false" aria-haspopup="menu">${glab} ▾</button>
+      <button type="button" class="${btnClass}" aria-expanded="false" aria-haspopup="menu">${btnInner}</button>
     </div>`;
   }).join('');
 }
@@ -4507,8 +4533,8 @@ function scatterDesktopPositions(n) {
 function renderDesktopIcons() {
   const container = document.getElementById('desktop-icons');
   container.innerHTML = '';
-  const pos = scatterDesktopPositions(DESKTOP_ITEMS.length);
-  DESKTOP_ITEMS.forEach((p, i) => {
+  const pos = scatterDesktopPositions(DESKTOP_ICON_ITEMS.length);
+  DESKTOP_ICON_ITEMS.forEach((p, i) => {
     const icon = document.createElement('div');
     icon.className = 'desktop-icon';
     icon.style.left = pos[i][0] + 'px';
