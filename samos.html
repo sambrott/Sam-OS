@@ -754,35 +754,83 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
 }
 
 .browser-bookmarks {
+  /* Stack above .browser-body so folder menus paint over the page/iframe. */
+  position: relative;
+  z-index: 20;
   flex-shrink: 0;
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: stretch;
+  gap: 4px;
   padding: 4px 10px 6px;
   min-height: 28px;
   background: linear-gradient(180deg, #f3f3f3 0%, #e8e8e8 100%);
   border-bottom: 1px solid rgba(0,0,0,0.16);
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   white-space: nowrap;
 }
-.browser-bookmark {
+.browser-bm-folder {
+  position: relative;
   flex: 0 0 auto;
-  max-width: 150px;
+  display: flex;
+  align-items: center;
+}
+.browser-bm-folder-btn {
+  flex: 0 0 auto;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 3px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(0,0,0,0.18);
-  background: linear-gradient(180deg, #fff 0%, #f0f0f0 100%);
+  padding: 4px 11px;
+  border-radius: 5px;
+  border: 1px solid rgba(0,0,0,0.2);
+  background: linear-gradient(180deg, #fff 0%, #ececec 100%);
   font-size: 11px;
   font-family: inherit;
+  font-weight: 600;
+  color: #222;
+  cursor: default;
+  white-space: nowrap;
+}
+.browser-bm-folder-btn:hover { filter: brightness(1.03); }
+.browser-bm-folder-btn[aria-expanded="true"] {
+  background: linear-gradient(180deg, #dbeaff 0%, #c8dcf5 100%);
+  border-color: rgba(10,100,200,0.45);
+}
+.browser-bm-folder-menu {
+  min-width: 180px;
+  max-width: 280px;
+  padding: 4px 0;
+  margin: 0;
+  background: rgba(253,253,253,0.98);
+  backdrop-filter: blur(12px);
+  border: 0.5px solid rgba(0,0,0,0.22);
+  border-radius: 8px;
+  box-shadow: 0 10px 36px rgba(0,0,0,0.22);
+  flex-direction: column;
+}
+/* Portaled to document.body so the menu is not a child of .browser-bookmarks (overflow / layout). */
+.browser-bm-folder-menu--portal {
+  position: fixed;
+  z-index: 50000;
+  display: flex;
+  box-sizing: border-box;
+}
+.browser-bm-link {
+  display: block;
+  width: 100%;
+  padding: 7px 14px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-family: inherit;
+  text-align: left;
   color: #222;
   cursor: pointer;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.browser-bookmark:hover { filter: brightness(1.04); }
-.browser-bookmark:active { filter: brightness(0.97); }
+.browser-bm-link:hover { background: rgba(10,132,255,0.12); color: #000; }
 
 .browser-tabs {
   height: 24px;
@@ -877,7 +925,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
 }
 .browser-tab-add:hover { background: rgba(255,255,255,0.45); }
 
-.browser-body { flex: 1; position: relative; background: white; overflow: hidden; }
+.browser-body { flex: 1; position: relative; z-index: 0; background: white; overflow: hidden; }
 .sam-tab-panel { position: absolute; inset: 0; overflow: hidden; display: none; background: #fff; }
 .browser-iframe {
   width: 100%; height: 100%;
@@ -1992,19 +2040,45 @@ const PHOTOS_ALBUMS = [
 const SAMIUM_ID = 'samium';
 const SAMIUM_SOCIAL_ID = 'samium-social';
 
-/** Samium favorites bar (shown under the address toolbar). */
-const SAMIUM_BOOKMARKS = [
-  { label: 'Forma', url: 'https://www.forma.cool/' },
-  { label: 'Overprint', url: 'https://overprint.design/' },
-  { label: 'Portfolio', url: 'https://sambrott.com/' },
-  { label: 'The Fridge', url: 'https://fridge-delta-one.vercel.app/' },
-  { label: 'Fruit World', url: 'https://fruit-world-eight.vercel.app/' },
-  { label: 'Wikipedia', url: 'https://www.wikipedia.org/' },
-  { label: 'YouTube', url: 'https://www.youtube.com/' },
-  { label: 'GitHub', url: 'https://github.com/sambrott' },
-  { label: 'X', url: 'https://x.com/sam__brott' },
-  { label: 'Instagram', url: 'https://www.instagram.com/sam.brott/' },
-  { label: 'LinkedIn', url: 'https://www.linkedin.com/in/sam-brott-970828155/' }
+/**
+ * Samium bookmark bar — folder buttons; items use data-url + JS (no broken onclick quotes).
+ */
+const SAMIUM_BOOKMARK_GROUPS = [
+  {
+    id: 'work',
+    label: 'Work',
+    items: [
+      { label: 'Forma', url: 'https://www.forma.cool/' },
+      { label: 'Overprint', url: 'https://overprint.design/' },
+      { label: 'Portfolio', url: 'https://sambrott.com/' }
+    ]
+  },
+  {
+    id: 'projects',
+    label: 'Projects',
+    items: [
+      { label: 'The Fridge', url: 'https://fridge-delta-one.vercel.app/' },
+      { label: 'Fruit World', url: 'https://fruit-world-eight.vercel.app/' }
+    ]
+  },
+  {
+    id: 'reference',
+    label: 'Watch & read',
+    items: [
+      { label: 'Wikipedia', url: 'https://www.wikipedia.org/' },
+      { label: 'YouTube', url: 'https://www.youtube.com/' }
+    ]
+  },
+  {
+    id: 'social',
+    label: 'Social',
+    items: [
+      { label: 'GitHub', url: 'https://github.com/sambrott' },
+      { label: 'X', url: 'https://x.com/sam__brott' },
+      { label: 'Instagram', url: 'https://www.instagram.com/sam.brott/' },
+      { label: 'LinkedIn', url: 'https://www.linkedin.com/in/sam-brott-970828155/' }
+    ]
+  }
 ];
 
 const samiumStates = {};
@@ -2014,7 +2088,16 @@ function ensureSamiumState(winId) {
   }
   return samiumStates[winId];
 }
+function samiumBookmarksCloseMenusForWin(winId) {
+  document.querySelectorAll('.browser-bm-folder-menu--portal').forEach(m => {
+    if (m.dataset.samWin === winId) samiumBookmarksTeardownPortal(m);
+  });
+  const win = document.getElementById(winId);
+  if (win) win.querySelectorAll('.browser-bm-folder-btn[aria-expanded="true"]').forEach(btn => btn.setAttribute('aria-expanded', 'false'));
+}
+
 function destroySamiumState(winId) {
+  samiumBookmarksCloseMenusForWin(winId);
   const st = samiumStates[winId];
   if (st && st.tabs) {
     st.tabs.forEach(t => { if (t.panelEl) t.panelEl.remove(); });
@@ -2257,6 +2340,7 @@ function closeWindow(id) {
 function minimizeWindow(id) {
   const win = document.getElementById(id);
   if (!win) return;
+  if (id === SAMIUM_ID || id === SAMIUM_SOCIAL_ID) samiumBookmarksCloseMenusForWin(id);
   win.style.transition = 'transform 0.3s, opacity 0.3s';
   win.style.transform = 'scale(0.1) translateY(400px)';
   win.style.opacity = '0';
@@ -2316,6 +2400,11 @@ document.addEventListener('mousemove', e => {
       let ny = e.clientY - dragState.startY;
       ny = Math.max(22, ny);
       win.style.left = nx + 'px'; win.style.top = ny + 'px';
+      if (dragState.id === SAMIUM_ID || dragState.id === SAMIUM_SOCIAL_ID) {
+        document.querySelectorAll('.browser-bm-folder-menu--portal').forEach(p => {
+          if (p.dataset.samWin === dragState.id && p._samiumBmReposition) p._samiumBmReposition();
+        });
+      }
     }
   }
   if (resizeState) {
@@ -2324,6 +2413,11 @@ document.addEventListener('mousemove', e => {
       const nw = Math.max(300, resizeState.startW + e.clientX - resizeState.startX);
       const nh = Math.max(200, resizeState.startH + e.clientY - resizeState.startY);
       win.style.width = nw + 'px'; win.style.height = nh + 'px';
+      if (resizeState.id === SAMIUM_ID || resizeState.id === SAMIUM_SOCIAL_ID) {
+        document.querySelectorAll('.browser-bm-folder-menu--portal').forEach(p => {
+          if (p.dataset.samWin === resizeState.id && p._samiumBmReposition) p._samiumBmReposition();
+        });
+      }
     }
   }
 });
@@ -2479,7 +2573,7 @@ function samiumWindowInnerHtml(winId) {
           onkeydown="if(event.key==='Enter')samiumGo(${w})" />
         <button type="button" class="go-btn" onclick="samiumGo(${w})">Go</button>
       </div>
-      <div class="browser-bookmarks" role="toolbar" aria-label="Bookmarks">${samiumBookmarksBarHtml(winId)}</div>
+      <div class="browser-bookmarks" role="toolbar" aria-label="Bookmarks">${samiumBookmarksBarHtml()}</div>
       <div class="browser-loading sam-loading"></div>
       <div class="browser-body sam-browser-body"></div>
     </div>
@@ -2510,12 +2604,125 @@ function samiumEscapeAttr(s) {
     .replace(/</g, '&lt;');
 }
 
-function samiumBookmarksBarHtml(winId) {
-  const w = JSON.stringify(winId);
-  return SAMIUM_BOOKMARKS.map(b => {
-    const t = samiumEscapeAttr(b.label);
-    return `<button type="button" class="browser-bookmark" title="${t}" onclick="samiumNavigate(${JSON.stringify(b.url)}, ${w})">${t}</button>`;
+function samiumBookmarksBarHtml() {
+  return SAMIUM_BOOKMARK_GROUPS.map(g => {
+    const glab = samiumEscapeAttr(g.label);
+    return `<div class="browser-bm-folder" data-bm-folder="${samiumEscapeAttr(g.id)}">
+      <button type="button" class="browser-bm-folder-btn" aria-expanded="false" aria-haspopup="menu">${glab} ▾</button>
+    </div>`;
   }).join('');
+}
+
+function samiumBookmarksPositionPortal(menu, anchorBtn) {
+  if (!anchorBtn.isConnected || !menu.isConnected) return;
+  const r = anchorBtn.getBoundingClientRect();
+  let left = r.left;
+  const top = r.bottom + 3;
+  menu.style.minWidth = Math.max(r.width, 180) + 'px';
+  menu.style.top = top + 'px';
+  menu.style.left = left + 'px';
+  requestAnimationFrame(() => {
+    if (!menu.isConnected) return;
+    const mw = menu.offsetWidth;
+    const vw = window.innerWidth;
+    if (left + mw > vw - 8) left = Math.max(8, vw - mw - 8);
+    else if (left < 8) left = 8;
+    menu.style.left = left + 'px';
+    const mh = menu.offsetHeight;
+    const vh = window.innerHeight;
+    let t = top;
+    if (t + mh > vh - 8) t = Math.max(8, r.top - mh - 3);
+    menu.style.top = t + 'px';
+  });
+}
+
+function samiumBookmarksTeardownPortal(menu) {
+  if (menu._samiumBmReposition) {
+    window.removeEventListener('scroll', menu._samiumBmReposition, true);
+    window.removeEventListener('resize', menu._samiumBmReposition);
+    menu._samiumBmReposition = null;
+  }
+  menu.remove();
+}
+
+function samiumBookmarksCloseMenus() {
+  document.querySelectorAll('.browser-bm-folder-menu--portal').forEach(samiumBookmarksTeardownPortal);
+  document.querySelectorAll('.browser-bm-folder-btn[aria-expanded="true"]').forEach(btn => {
+    btn.setAttribute('aria-expanded', 'false');
+  });
+}
+
+if (typeof window._samiumBmOutsideWired === 'undefined') {
+  window._samiumBmOutsideWired = true;
+  document.addEventListener('click', e => {
+    if (e.target.closest('.browser-bm-folder')) return;
+    if (e.target.closest('.browser-bm-folder-menu--portal')) return;
+    samiumBookmarksCloseMenus();
+  }, true);
+}
+
+function samiumBookmarksOpenPortalMenu(bar, winId, folderBtn, folderId) {
+  const existing = document.querySelector('.browser-bm-folder-menu--portal');
+  if (existing && existing._samiumBmAnchor === folderBtn) {
+    samiumBookmarksCloseMenus();
+    return;
+  }
+  samiumBookmarksCloseMenus();
+
+  const g = SAMIUM_BOOKMARK_GROUPS.find(x => x.id === folderId);
+  if (!g) return;
+
+  const menu = document.createElement('div');
+  menu.className = 'browser-bm-folder-menu browser-bm-folder-menu--portal';
+  menu.setAttribute('role', 'menu');
+  menu.dataset.samWin = winId;
+  menu.innerHTML = g.items.map(b => {
+    const tl = samiumEscapeAttr(b.label);
+    const u = samiumEscapeAttr(b.url);
+    return `<button type="button" class="browser-bm-link" role="menuitem" data-url="${u}">${tl}</button>`;
+  }).join('');
+  menu._samiumBmAnchor = folderBtn;
+
+  menu.addEventListener('click', e => {
+    const link = e.target.closest('.browser-bm-link');
+    if (!link) return;
+    e.preventDefault();
+    const url = link.getAttribute('data-url');
+    const wid = menu.dataset.samWin || winId;
+    if (url) {
+      playUISound('tap');
+      samiumNavigate(url, wid);
+    }
+    samiumBookmarksCloseMenus();
+  });
+
+  document.body.appendChild(menu);
+  samiumBookmarksPositionPortal(menu, folderBtn);
+  const repos = () => samiumBookmarksPositionPortal(menu, folderBtn);
+  menu._samiumBmReposition = repos;
+  window.addEventListener('scroll', repos, true);
+  window.addEventListener('resize', repos);
+
+  bar.querySelectorAll('.browser-bm-folder-btn').forEach(b => {
+    b.setAttribute('aria-expanded', b === folderBtn ? 'true' : 'false');
+  });
+}
+
+function samiumWireBookmarks(winId) {
+  const bar = samiumQ(winId, '.browser-bookmarks');
+  if (!bar || bar.dataset.samBookmarksWired === '1') return;
+  bar.dataset.samBookmarksWired = '1';
+  bar.addEventListener('click', e => {
+    const folderBtn = e.target.closest('.browser-bm-folder-btn');
+    if (folderBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const wrap = folderBtn.closest('.browser-bm-folder');
+      const folderId = wrap && wrap.dataset.bmFolder;
+      if (!folderId) return;
+      samiumBookmarksOpenPortalMenu(bar, winId, folderBtn, folderId);
+    }
+  });
 }
 
 function samiumRenderTabs(winId) {
@@ -2735,7 +2942,7 @@ function openSamium(initialUrl, openInNewTab, winId = SAMIUM_ID) {
 
   createWindow({
     id: winId, title, icon: '🌐',
-    x, y, w: 900, h: 580,
+    x, y, w: Math.round(900 * 1.3), h: Math.round(580 * 1.3),
     content: samiumWindowInnerHtml(winId)
   });
 
@@ -2743,6 +2950,7 @@ function openSamium(initialUrl, openInNewTab, winId = SAMIUM_ID) {
   st.tabs = [{ history: [], historyIdx: -1, title: 'New Tab', panelEl: null }];
   st.activeTabIndex = 0;
   samiumWireTabStrip(winId);
+  samiumWireBookmarks(winId);
   samiumEnsurePanelForTab(winId, 0);
   samiumSyncPanelVisibility(winId);
   samiumRenderTabs(winId);
