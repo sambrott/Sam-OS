@@ -254,26 +254,30 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
 .desktop-icon.selected { background: rgba(100,150,255,0.4); }
 
 .icon-img {
-  width: 72px; min-height: 72px;
-  border-radius: 0;
+  width: 72px; height: 72px;
+  border-radius: 15px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 52px;
-  line-height: 1;
-  background: transparent;
-  box-shadow: none;
+  font-size: 39px;
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.4),
+    0 1px 0 rgba(255,255,255,0.5) inset,
+    0 -1px 0 rgba(0,0,0,0.2) inset;
   position: relative;
-  overflow: visible;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+  overflow: hidden;
 }
 .icon-img::after {
-  display: none;
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent);
+  border-radius: 15px 15px 0 0;
 }
 
 .icon-img > svg.icon-fridge {
   position: relative;
   z-index: 1;
-  width: 52px;
-  height: 65px;
+  width: 40px;
+  height: 50px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
 }
 .project-header svg.icon-fridge {
   position: relative;
@@ -526,77 +530,6 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
 }
 
-.browser-bookmarks {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px;
-  min-height: 26px;
-  padding: 2px 8px 4px;
-  background: linear-gradient(180deg, #ececec 0%, #dedede 100%);
-  border-bottom: 1px solid rgba(0,0,0,0.18);
-  flex-shrink: 0;
-  position: relative;
-  z-index: 6;
-}
-.bm-folder-wrap { position: relative; }
-.bm-folder-btn {
-  height: 22px;
-  padding: 0 10px;
-  font-size: 11px;
-  border: 1px solid rgba(0,0,0,0.22);
-  border-radius: 4px;
-  background: linear-gradient(180deg, #fafafa, #e8e8e8);
-  cursor: pointer;
-  color: #222;
-  font-family: inherit;
-}
-.bm-folder-btn:hover { filter: brightness(1.03); }
-.bm-caret { font-size: 9px; opacity: 0.65; margin-left: 2px; }
-.bm-folder-dd {
-  display: none;
-  position: absolute;
-  top: calc(100% + 2px);
-  left: 0;
-  min-width: 200px;
-  max-height: 320px;
-  overflow-y: auto;
-  background: rgba(252,252,252,0.98);
-  border: 1px solid rgba(0,0,0,0.22);
-  border-radius: 6px;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.22);
-  z-index: 300;
-}
-.bm-folder-dd.open { display: block; }
-.bm-dd-item {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 7px 14px;
-  font-size: 12px;
-  border: none;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  background: transparent;
-  cursor: pointer;
-  color: #222;
-  font-family: inherit;
-}
-.bm-dd-item:last-child { border-bottom: none; }
-.bm-dd-item:hover { background: #4a90d9; color: #fff; }
-.bm-item-resume {
-  height: 22px;
-  padding: 0 11px;
-  font-size: 11px;
-  margin-left: 2px;
-  border: 1px solid rgba(0,0,0,0.22);
-  border-radius: 4px;
-  background: linear-gradient(180deg, #fffaf5, #f5ebe0);
-  cursor: pointer;
-  color: #333;
-  font-family: inherit;
-}
-.bm-item-resume:hover { filter: brightness(1.04); }
-
 .browser-tabs {
   height: 24px;
   background: linear-gradient(180deg, #d4d4d4 0%, #c0c0c0 100%);
@@ -604,11 +537,23 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
   display: flex; align-items: flex-end;
   padding: 0 8px;
   flex-shrink: 0;
+  min-width: 0;
+  gap: 4px;
+}
+
+.browser-tabs-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
 }
 
 .browser-tab {
   height: 20px; padding: 0 8px 0 12px;
-  max-width: 200px;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 240px;
   background: linear-gradient(180deg, #ebebeb 0%, #e0e0e0 100%);
   border: 0.5px solid rgba(0,0,0,0.2);
   border-bottom: none;
@@ -616,6 +561,14 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
   font-size: 11px; color: #333;
   display: flex; align-items: center; gap: 4px;
   cursor: pointer;
+}
+
+/* One open tab: size to title (capped), like desktop browsers—do not span full strip */
+.browser-tabs-main:has(> .browser-tab:only-child) .browser-tab {
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 240px;
+  min-width: 120px;
 }
 .browser-tab-label {
   flex: 1;
@@ -662,7 +615,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
   color: #111;
 }
 .browser-tab-add {
-  height: 20px; min-width: 22px; padding: 0 6px; margin-left: 4px; margin-bottom: 0;
+  height: 20px; min-width: 22px; padding: 0 6px; margin-left: 0; margin-bottom: 0;
+  flex-shrink: 0;
   background: rgba(255,255,255,0.25); border: 0.5px dashed rgba(0,0,0,0.25);
   border-radius: 4px 4px 0 0; font-size: 14px; line-height: 1; cursor: pointer;
   display: flex; align-items: center; justify-content: center; color: #444;
@@ -810,47 +764,155 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
   letter-spacing: 0.1em; text-transform: uppercase;
 }
 
-/* ===================== SNAKE GAME ===================== */
-.game-widget { background: #111; }
-.game-widget .titlebar {
-  background: linear-gradient(180deg, #222, #111);
-  border-bottom: 1px solid #000;
+/* ===================== ARCADE — retro Mac ===================== */
+.arcade-app { background: #c0c0c0 !important; }
+.arcade-app .titlebar {
+  background: linear-gradient(180deg, #ececec, #cfcfcf);
+  border-bottom: 1px solid #444;
 }
-.game-widget .titlebar-title { color: #00ff41; text-shadow: 0 0 8px #00ff41; }
-.game-body {
-  background: #0a0a0a;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  height: 100%; gap: 10px;
+.arcade-app .titlebar-title {
+  color: #000;
+  text-shadow: none;
+  font-family: Geneva, system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.arcade-hub {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  font-family: Geneva, Chicago, ui-monospace, "Courier New", monospace;
+  font-size: 13px;
+  color: #000;
+}
+.arcade-hub .window-body-context { overflow: hidden; }
+.arcade-strip {
+  display: flex;
+  gap: 6px;
+  padding: 7px 8px;
+  flex-shrink: 0;
+  background: repeating-linear-gradient(
+    135deg,
+    #c8c8c8, #c8c8c8 10px,
+    #bebebe 10px, #bebebe 20px
+  );
+  border-bottom: 1px solid rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+.arcade-strip .arcade-tab {
+  flex: 1;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 8px;
+  border: 1.5px solid #000;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #fff 0%, #d4d4d4 92%, #a8a8a8);
+  cursor: pointer;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.85),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.12);
+}
+.arcade-strip .arcade-tab:hover {
+  filter: brightness(1.03);
+}
+.arcade-strip .arcade-tab.active {
+  background: linear-gradient(180deg, #a8caf0 0%, #6bacf7 94%, #2d76c4);
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.arcade-panels-wrap {
+  flex: 1;
+  min-height: 0;
   padding: 10px;
+  background: linear-gradient(180deg, #d8d8d8 0%, #c8c8c8 100%);
 }
-#snake-canvas {
-  border: 1px solid #00ff41;
-  box-shadow: 0 0 15px rgba(0,255,65,0.3);
+
+.arcade-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 6px;
+  overflow: hidden;
+}
+.arcade-hud {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  max-width: 330px;
+}
+.arcade-panel canvas.mac-canvas-game {
   image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background: repeating-linear-gradient(90deg,
+    rgba(230,230,230,1) 0 2px, rgba(255,255,255,1) 2px 4px),
+    repeating-linear-gradient(180deg,
+    rgba(238,238,238,1) 0 2px, rgba(246,246,246,1) 2px 4px);
+  border: 2px solid #000;
+  box-shadow:
+    inset 3px 3px 0 rgba(255, 255, 255, 0.75),
+    3px 3px 0 rgba(120, 120, 120, 0.6);
 }
-.game-instructions {
-  font-size: 11px; color: rgba(0,255,65,0.7);
-  text-align: center; line-height: 1.4;
-  font-family: monospace;
+
+.arcade-hint {
+  font-size: 11px;
+  color: #444;
 }
-.game-score {
-  font-size: 14px; color: #00ff41;
-  font-family: monospace; font-weight: 700;
-  text-shadow: 0 0 8px #00ff41;
+.retro-push {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 20px;
+  border: 1.5px solid #000;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #fdfdfd 0%, #dcdcdc);
+  cursor: pointer;
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.9),
+    inset -2px -2px 3px rgba(0, 0, 0, 0.1);
 }
-.game-start-btn {
-  background: transparent; border: 1px solid #00ff41;
-  color: #00ff41; font-family: monospace;
-  padding: 6px 16px; cursor: pointer;
-  font-size: 12px; border-radius: 2px;
-  text-shadow: 0 0 8px #00ff41;
-  box-shadow: 0 0 8px rgba(0,255,65,0.2);
-  transition: all 0.15s;
+.retro-push:hover { filter: brightness(1.02); }
+.retro-push:active {
+  transform: translateY(1px);
 }
-.game-start-btn:hover {
-  background: rgba(0,255,65,0.1);
-  box-shadow: 0 0 16px rgba(0,255,65,0.4);
+
+/* Credits about box */
+.credits-about .window-body {
+  overflow: hidden;
+  padding: 0 !important;
+}
+.credits-pane {
+  height: 100%;
+  overflow: auto;
+  padding: 20px 24px;
+  font-family: Geneva, "Helvetica Neue", sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #111;
+  background: linear-gradient(180deg, #fafafa 0%, #e4e4e4 100%);
+}
+.credits-pane h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.credits-pane h3 {
+  font-size: 14px;
+  margin: 16px 0 6px;
+  font-weight: 700;
+}
+.credits-pane a { color: #06c; }
+.credits-pane a:hover { color: #04a; text-decoration: underline; }
+.credits-pane .muted {
+  margin-top: 18px;
+  font-size: 11px;
+  color: #666;
 }
 
 /* ===================== CALCULATOR ===================== */
@@ -1433,10 +1495,10 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
       <div class="dock-dot" style="display:none"></div>
       <div class="dock-tooltip">World Clock</div>
     </div>
-    <div class="dock-icon" data-app="snake" title="Snake">
-      <div class="dock-icon-img" style="background: linear-gradient(135deg, #0a2a0a 0%, #001000 100%);">🐍</div>
+    <div class="dock-icon" data-app="arcade" title="Arcade">
+      <div class="dock-icon-img" style="background: linear-gradient(135deg, #2b2b2b 0%, #5a4a3a 40%, #8b7355 100%);">🕹️</div>
       <div class="dock-dot" style="display:none"></div>
-      <div class="dock-tooltip">Snake</div>
+      <div class="dock-tooltip">Arcade</div>
     </div>
     <div class="dock-separator"></div>
     <div class="dock-icon dock-quick" data-dock-url="https://x.com/sam__brott" title="X (Twitter)">
@@ -1458,6 +1520,11 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
       <div class="dock-tooltip">Résumé</div>
     </div>
     <div class="dock-separator"></div>
+    <div class="dock-icon" data-app="credits" title="Credits">
+      <div class="dock-icon-img" style="background: linear-gradient(135deg, #f0f0f0 0%, #b8b8c8 100%); font-size: 20px;">✦</div>
+      <div class="dock-dot" style="display:none"></div>
+      <div class="dock-tooltip">Credits</div>
+    </div>
     <div class="dock-icon" data-app="trash" title="Trash">
       <div class="dock-icon-img" style="background: linear-gradient(135deg, #e0e0e0 0%, #c0c0c0 100%);">🗑️</div>
       <div class="dock-tooltip">Trash</div>
@@ -1604,18 +1671,6 @@ const DESKTOP_ITEMS = [
     url: 'https://wheelspin-rho.vercel.app/'
   },
   {
-    id: 'nathan-birthday',
-    name: "Nathan's birthday",
-    emoji: '🎂',
-    color: 'linear-gradient(135deg, #fda4af 0%, #f0abfc 45%, #93c5fd 100%)',
-    type: 'Microsite',
-    tags: ['GitHub: nathan-birthday'],
-    finderTerms: 'nathan birthday happy birthday celebration',
-    desc: 'Happy Birthday Nathan — github.com/sambrott/nathan-birthday (GitHub Pages).',
-    action: 'samium',
-    url: 'https://sambrott.github.io/nathan-birthday/'
-  },
-  {
     id: 'portfolio',
     name: 'Portfolio',
     emoji: '💼',
@@ -1660,10 +1715,6 @@ const PHOTOS_ALBUMS = [
 
 const SAMIUM_ID = 'samium';
 const SAMIUM_SOCIAL_ID = 'samium-social';
-/** Résumé PDF (same as dock). Bookmarks open the desktop document window. */
-const SAMIUM_RESUME_PDF_URL = 'https://www.sambrott.com/portfolio%20site%20assets/Resume%202026.pdf';
-/** Replace with your Upwork profile URL (profile page → copy from address bar). */
-const SAMIUM_BOOKMARK_UPWORK_URL = 'https://www.upwork.com/nx/search/talent/?q=Sam%20Brott';
 const samiumStates = {};
 function ensureSamiumState(winId) {
   if (!samiumStates[winId]) {
@@ -1738,6 +1789,65 @@ function syncMenubarApplicationName() {
   mb.title = label;
 }
 
+/* Arcade teardown (referenced from closeWindow) */
+let arcadeTimers = {
+  snakeTimer: null, snakeKeyFn: null, snakeRun: false,
+  pongRAF: null, pongKd: null, pongKu: null, pongRun: false
+};
+function arcadeClearSnake() {
+  arcadeTimers.snakeRun = false;
+  if (arcadeTimers.snakeTimer) clearTimeout(arcadeTimers.snakeTimer);
+  arcadeTimers.snakeTimer = null;
+  if (arcadeTimers.snakeKeyFn) {
+    document.removeEventListener('keydown', arcadeTimers.snakeKeyFn);
+    arcadeTimers.snakeKeyFn = null;
+  }
+}
+function arcadeClearPong() {
+  arcadeTimers.pongRun = false;
+  if (arcadeTimers.pongRAF) cancelAnimationFrame(arcadeTimers.pongRAF);
+  arcadeTimers.pongRAF = null;
+  if (arcadeTimers.pongKd) {
+    document.removeEventListener('keydown', arcadeTimers.pongKd);
+    arcadeTimers.pongKd = null;
+  }
+  if (arcadeTimers.pongKu) {
+    document.removeEventListener('keyup', arcadeTimers.pongKu);
+    arcadeTimers.pongKu = null;
+  }
+}
+function arcadeDetachAllGames() {
+  arcadeClearSnake();
+  arcadeClearPong();
+}
+
+/** MacOS Classic Sound Pack WAV filenames (collector: Stephen J. Cohen — full credit in Credits panel). */
+const MAC_SOUND_FILES = {
+  bip: 'Bip.wav',
+  pong: 'Pong2003.wav',
+  boing: 'Boing.wav',
+  click: 'Single Click.wav',
+  uhOh: 'Uh oh.wav',
+  wildEep: 'Wild Eep.wav',
+  sosumi: 'Sosumi.wav',
+  whit: 'Whit.wav'
+};
+
+function getMacUISoundVolume() {
+  const sl = document.getElementById('cc-vol');
+  const raw = sl ? (+sl.value) : 70;
+  return Math.max(0, Math.min(1, (Number.isFinite(raw) ? raw : 70) / 100));
+}
+
+function playMacSound(key, opts = {}) {
+  const fn = MAC_SOUND_FILES[key];
+  if (!fn) return;
+  const a = new Audio('sounds/' + encodeURIComponent(fn));
+  const base = opts.vol != null ? opts.vol : 1;
+  a.volume = Math.max(0, Math.min(1, base * getMacUISoundVolume()));
+  a.play().catch(() => {});
+}
+
 function createWindow({ id, title, icon='', x, y, w, h, content, className='', resizable=true }) {
   if (document.getElementById(id)) { bringToFront(id); return; }
   const win = document.createElement('div');
@@ -1794,6 +1904,7 @@ function createWindow({ id, title, icon='', x, y, w, h, content, className='', r
 }
 
 function closeWindow(id) {
+  if (id === 'arcade') arcadeDetachAllGames();
   if (id === 'photobooth' && window._pbCleanup) {
     window._pbCleanup();
     window._pbCleanup = null;
@@ -2016,7 +2127,7 @@ function samiumNewTabPageHtml(winId) {
       <h2>Samium</h2>
       <p>The browser for Sam OS — built on WebKit, powered by curiosity</p>
       <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:320px;">
-        ${['forma.cool','overprint.design','sambrott.com','sambrott.github.io/nathan-birthday','wikipedia.org','example.com'].map(u=>`<button class="btn btn-secondary" style="flex:none;width:auto;padding:0 12px;" onclick="samiumNavigate('https://${u}', ${w})">${u}</button>`).join('')}
+        ${['forma.cool','overprint.design','sambrott.com','wikipedia.org','example.com'].map(u=>`<button class="btn btn-secondary" style="flex:none;width:auto;padding:0 12px;" onclick="samiumNavigate('https://${u}', ${w})">${u}</button>`).join('')}
       </div>
     </div>
   `;
@@ -2035,7 +2146,6 @@ function samiumWindowInnerHtml(winId) {
           onkeydown="if(event.key==='Enter')samiumGo(${w})" />
         <button type="button" class="go-btn" onclick="samiumGo(${w})">Go</button>
       </div>
-      <div class="browser-bookmarks sam-bookmarks" data-sam-bm-win="${winId}"></div>
       <div class="browser-loading sam-loading"></div>
       <div class="browser-body sam-browser-body"></div>
     </div>
@@ -2070,14 +2180,14 @@ function samiumRenderTabs(winId) {
   const strip = samiumQ(winId, '.sam-tab-strip');
   const st = ensureSamiumState(winId);
   if (!strip) return;
-  strip.innerHTML = st.tabs.map((t, i) => {
+  strip.innerHTML = '<div class="browser-tabs-main">' + st.tabs.map((t, i) => {
     const rawTitle = t.title || 'Tab';
     const safe = samiumEscapeAttr(rawTitle);
     return `<div class="browser-tab${i === st.activeTabIndex ? ' active' : ''}" data-sam-tab="${i}" title="${safe}">
       <span class="browser-tab-label">${samiumEscapeAttr(rawTitle)}</span>
       <button type="button" class="browser-tab-close" title="Close tab" aria-label="Close tab">×</button>
     </div>`;
-  }).join('') + '<div class="browser-tab-add" title="New tab">+</div>';
+  }).join('') + '</div><div class="browser-tab-add" title="New tab">+</div>';
 }
 
 /** Close Samium tab at index; last tab resets to a fresh New Tab page. */
@@ -2132,80 +2242,6 @@ function samiumWireTabStrip(winId) {
     }
     const cell = e.target.closest('[data-sam-tab]');
     if (cell) samiumSwitchTab(+cell.dataset.samTab, winId);
-  });
-}
-
-function samiumCloseAllBookmarkDropdowns() {
-  document.querySelectorAll('.bm-folder-dd.open').forEach(dd => dd.classList.remove('open'));
-}
-
-let _samiumBookmarkDocCloseWired = false;
-function samiumWireBookmarkDocCloseOnce() {
-  if (_samiumBookmarkDocCloseWired) return;
-  _samiumBookmarkDocCloseWired = true;
-  document.addEventListener('click', () => samiumCloseAllBookmarkDropdowns());
-}
-
-function samiumBookmarkSocialEntries() {
-  return [
-    { name: 'X', url: 'https://x.com/sam__brott' },
-    { name: 'Instagram', url: 'https://www.instagram.com/sam.brott/' },
-    { name: 'LinkedIn', url: 'https://www.linkedin.com/in/sam-brott-970828155/' },
-    { name: 'Upwork', url: SAMIUM_BOOKMARK_UPWORK_URL },
-  ];
-}
-
-function samiumInitBookmarks(winId) {
-  const bar = samiumQ(winId, '.sam-bookmarks');
-  if (!bar || bar.dataset.samBmWired === '1') return;
-  bar.dataset.samBmWired = '1';
-  samiumWireBookmarkDocCloseOnce();
-
-  const projects = DESKTOP_ITEMS.filter(p => p.priority);
-  const microsites = DESKTOP_ITEMS.filter(p => !p.priority);
-
-  const folderHtml = (label, items) => {
-    const links = items.map(it => {
-      const enc = encodeURIComponent(it.url);
-      return `<button type="button" class="bm-dd-item" data-bm-url="${enc}">${samiumEscapeAttr(it.name)}</button>`;
-    }).join('');
-    return `<div class="bm-folder-wrap">
-      <button type="button" class="bm-folder-btn">${samiumEscapeAttr(label)}<span class="bm-caret">▾</span></button>
-      <div class="bm-folder-dd">${links}</div>
-    </div>`;
-  };
-
-  bar.innerHTML =
-    folderHtml('Projects', projects.map(p => ({ name: p.name, url: p.url }))) +
-    folderHtml('Micro sites', microsites.map(p => ({ name: p.name, url: p.url }))) +
-    folderHtml('Socials', samiumBookmarkSocialEntries()) +
-    `<button type="button" class="bm-item-resume">${samiumEscapeAttr('Résumé')}</button>`;
-
-  bar.addEventListener('click', e => {
-    const fBtn = e.target.closest('.bm-folder-btn');
-    if (fBtn) {
-      e.stopPropagation();
-      const wrap = fBtn.closest('.bm-folder-wrap');
-      const dd = wrap && wrap.querySelector('.bm-folder-dd');
-      if (!dd) return;
-      const was = dd.classList.contains('open');
-      samiumCloseAllBookmarkDropdowns();
-      if (!was) dd.classList.add('open');
-      return;
-    }
-    const bItem = e.target.closest('.bm-dd-item');
-    if (bItem && bItem.dataset.bmUrl != null && bItem.dataset.bmUrl !== '') {
-      e.stopPropagation();
-      samiumCloseAllBookmarkDropdowns();
-      const url = decodeURIComponent(bItem.dataset.bmUrl);
-      samiumOpenUrlInNewTab(url, winId);
-      return;
-    }
-    if (e.target.closest('.bm-item-resume')) {
-      e.stopPropagation();
-      samiumCloseAllBookmarkDropdowns();
-      samiumOpenUrlInNewTab(resumePdfEmbedUrl(SAMIUM_RESUME_PDF_URL), winId);
-    }
   });
 }
 
@@ -2360,7 +2396,6 @@ function openSamium(initialUrl, openInNewTab, winId = SAMIUM_ID) {
   st.tabs = [{ history: [], historyIdx: -1, title: 'New Tab', panelEl: null }];
   st.activeTabIndex = 0;
   samiumWireTabStrip(winId);
-  samiumInitBookmarks(winId);
   samiumEnsurePanelForTab(winId, 0);
   samiumSyncPanelVisibility(winId);
   samiumRenderTabs(winId);
@@ -2594,94 +2629,451 @@ function calcFn(fn) {
 }
 
 /* ============================================================
-   SNAKE GAME
+   ARCADE (Snake + Pong) + CREDITS
    ============================================================ */
-let snakeGame = null;
 function openSnake() {
-  const id = 'snake';
+  openArcade('snake');
+}
+
+function openCredits() {
+  const id = 'credits-sheet';
+  if (document.getElementById(id)) {
+    bringToFront(id);
+    return;
+  }
+  playMacSound('sosumi', { vol: 0.5 });
   createWindow({
-    id, title: 'Snake', icon: '🐍',
-    x: 400, y: 200, w: 320, h: 380,
+    id,
+    title: 'Credits',
+    icon: '✦',
+    x: 200, y: 88, w: 460, h: 500,
+    className: 'credits-about',
     content: `
-      <div class="game-body">
-        <div class="game-score">Score: <span id="snake-score">0</span></div>
-        <canvas id="snake-canvas" width="280" height="280"></canvas>
-        <div class="game-instructions">Arrow Keys or WASD to move</div>
-        <button class="game-start-btn" onclick="startSnake()">▶ START GAME</button>
+      <div class="credits-pane">
+        <h2>Credits</h2>
+        <p style="margin:0 0 12px;">Sam OS — built as a playful desktop-style portfolio experience.</p>
+
+        <h3>Sound</h3>
+        <p>System-style sound effects use the <strong>MacOS Classic Sound Pack v1.5</strong>, collected by
+        <strong>Stephen J. Cohen</strong> (bundled WAV files in this project's <code>sounds/</code> folder).</p>
+
+        <h3>Design inspiration</h3>
+        <p><strong><a href="https://ryo.lu" target="_blank" rel="noopener noreferrer">Ryo Lu</a></strong> — head designer at Cursor; <a href="https://ryo.lu" target="_blank" rel="noopener noreferrer">ryo.lu</a> inspired this site's direction.</p>
+        <p><strong><a href="https://bychudy.com" target="_blank" rel="noopener noreferrer">bychudy.com</a></strong> — also inspired this project.</p>
+
+        <p class="muted">Thank you to everyone above for the sounds, craft, and references that made this build more fun to ship.</p>
       </div>
-    `,
-    className: 'game-widget'
+    `
   });
 }
 
-function startSnake() {
-  const canvas = document.getElementById('snake-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const sz = 14; const cols = 20; const rows = 20;
-  let snake = [{x:10,y:10}], dir = {x:1,y:0}, nextDir = {x:1,y:0};
-  let food = {x:5,y:5}, score = 0, running = true;
-
-  function rndFood() {
-    return { x: Math.floor(Math.random()*cols), y: Math.floor(Math.random()*rows) };
+function openArcade(initial = 'snake') {
+  const id = 'arcade';
+  if (document.getElementById(id)) {
+    bringToFront(id);
+    arcadeSelectTab(initial);
+    return;
   }
-  food = rndFood();
+  createWindow({
+    id,
+    title: 'Arcade',
+    icon: '🕹️',
+    x: 200, y: 70, w: 440, h: 520,
+    className: 'arcade-app',
+    content: `
+      <div class="arcade-hub">
+        <div class="arcade-strip" role="tablist" aria-label="Games">
+          <button type="button" class="arcade-tab active" data-tab="snake" id="arcade-tab-snake" onclick="arcadeSelectTab('snake')">🐍 Snake</button>
+          <button type="button" class="arcade-tab" data-tab="pong" id="arcade-tab-pong" onclick="arcadeSelectTab('pong')">⊥ Pong</button>
+        </div>
+        <div class="arcade-panels-wrap">
+          <div id="arcade-panel-snake" class="arcade-panel">
+            <div class="arcade-hud">
+              <span>Score <strong id="arcade-snake-score">0</strong></span>
+              <span>Best <strong id="arcade-snake-best">0</strong></span>
+            </div>
+            <canvas id="arcade-snake-canvas" class="mac-canvas-game" width="286" height="286" aria-label="Snake game"></canvas>
+            <p class="arcade-hint">Arrows · WASD · no reverse into yourself</p>
+            <button type="button" id="arcade-snake-btn" class="retro-push" onclick="startArcadeSnake()">▶ New game</button>
+          </div>
+          <div id="arcade-panel-pong" class="arcade-panel" style="display:none">
+            <div class="arcade-hud">
+              <span>You <strong id="arcade-pong-l">0</strong></span>
+              <span>Mac <strong id="arcade-pong-r">0</strong></span>
+            </div>
+            <canvas id="arcade-pong-canvas" class="mac-canvas-game" width="352" height="264" aria-label="Pong game"></canvas>
+            <p class="arcade-hint">W / S — first to 7 wins</p>
+            <button type="button" id="arcade-pong-btn" class="retro-push" onclick="startArcadePong()">▶ New match</button>
+          </div>
+        </div>
+      </div>
+    `
+  });
+  arcadeSelectTab(initial);
+  playMacSound('click', { vol: 0.4 });
+}
 
-  const handler = (e) => {
-    const map = {ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1},ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0},
-      w:{x:0,y:-1},s:{x:0,y:1},a:{x:-1,y:0},d:{x:1,y:0}};
+function arcadeSelectTab(tab) {
+  const strip = document.querySelector('#arcade .arcade-strip');
+  const cur = strip?.querySelector('.arcade-tab.active')?.getAttribute('data-tab');
+  if (cur === tab) return;
+  arcadeDetachAllGames();
+  document.querySelectorAll('#arcade .arcade-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
+  });
+  const snakeP = document.getElementById('arcade-panel-snake');
+  const pongP = document.getElementById('arcade-panel-pong');
+  if (snakeP) snakeP.style.display = tab === 'snake' ? 'flex' : 'none';
+  if (pongP) pongP.style.display = tab === 'pong' ? 'flex' : 'none';
+  playMacSound('click', { vol: 0.42 });
+}
+
+function startArcadeSnake() {
+  const canvas = document.getElementById('arcade-snake-canvas');
+  if (!canvas) return;
+  arcadeClearSnake();
+  const ctx = canvas.getContext('2d');
+  const sz = 13;
+  const cols = 22;
+  const rows = 22;
+  const CW = sz * cols;
+  const CH = sz * rows;
+  canvas.width = CW;
+  canvas.height = CH;
+
+  let snake = [{ x: 8, y: 11 }, { x: 7, y: 11 }, { x: 6, y: 11 }];
+  let dir = { x: 1, y: 0 };
+  let nextDir = { x: 1, y: 0 };
+  let score = 0;
+  let running = true;
+  arcadeTimers.snakeRun = true;
+
+  function placeFood() {
+    let p;
+    do {
+      p = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
+    } while (snake.some(s => s.x === p.x && s.y === p.y));
+    return p;
+  }
+  let food = placeFood();
+
+  const scoreEl = document.getElementById('arcade-snake-score');
+  const bestEl = document.getElementById('arcade-snake-best');
+  const btn = document.getElementById('arcade-snake-btn');
+  let best = 0;
+  try {
+    best = Math.max(0, parseInt(localStorage.getItem('samOSArcadeSnakeBest') || '0', 10) || 0);
+  } catch (e) {}
+  if (bestEl) bestEl.textContent = String(best);
+  if (scoreEl) scoreEl.textContent = '0';
+  if (btn) btn.textContent = '↺ Restart';
+
+  arcadeTimers.snakeKeyFn = function (e) {
+    if (!arcadeTimers.snakeRun || !running) return;
+    const map = {
+      ArrowUp: { x: 0, y: -1 }, ArrowDown: { x: 0, y: 1 }, ArrowLeft: { x: -1, y: 0 }, ArrowRight: { x: 1, y: 0 },
+      w: { x: 0, y: -1 }, s: { x: 0, y: 1 }, a: { x: -1, y: 0 }, d: { x: 1, y: 0 }
+    };
     const k = map[e.key];
-    if (k && !(k.x === -dir.x && k.y === -dir.y)) { nextDir = k; e.preventDefault(); }
+    if (k && !(k.x === -dir.x && k.y === -dir.y)) {
+      nextDir = k;
+      e.preventDefault();
+    }
   };
-  document.addEventListener('keydown', handler);
+  document.addEventListener('keydown', arcadeTimers.snakeKeyFn);
 
-  function draw() {
-    if (!running || !document.getElementById('snake-canvas')) {
-      document.removeEventListener('keydown', handler); return;
+  function paint() {
+    ctx.fillStyle = '#ececec';
+    ctx.fillRect(0, 0, CW, CH);
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= cols; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * sz + 0.5, 0);
+      ctx.lineTo(i * sz + 0.5, CH);
+      ctx.stroke();
+    }
+    for (let j = 0; j <= rows; j++) {
+      ctx.beginPath();
+      ctx.moveTo(0, j * sz + 0.5);
+      ctx.lineTo(CW, j * sz + 0.5);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#b00000';
+    ctx.beginPath();
+    ctx.arc(food.x * sz + sz / 2, food.y * sz + sz / 2, sz / 2 - 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    snake.forEach((seg, idx) => {
+      const px = seg.x * sz + 1;
+      const py = seg.y * sz + 1;
+      const w = sz - 2;
+      ctx.fillStyle = idx === 0 ? '#0a0a0a' : '#1a1a1a';
+      ctx.fillRect(px, py, w, w);
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1;
+      if (idx === 0) {
+        ctx.strokeRect(px + 0.5, py + 0.5, w - 2, w - 2);
+      }
+    });
+  }
+
+  function gameOver(msg) {
+    running = false;
+    arcadeTimers.snakeRun = false;
+    document.removeEventListener('keydown', arcadeTimers.snakeKeyFn);
+    arcadeTimers.snakeKeyFn = null;
+    playMacSound('uhOh', { vol: 0.62 });
+    paint();
+    ctx.fillStyle = 'rgba(255,255,255,0.82)';
+    ctx.fillRect(0, CH / 2 - 54, CW, 108);
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(1, CH / 2 - 53, CW - 2, 106);
+    ctx.fillStyle = '#000';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 18px Geneva,Chicago,system-ui,sans-serif';
+    ctx.fillText(msg || 'GAME OVER', CW / 2, CH / 2 - 14);
+    ctx.font = '14px Geneva,Chicago,system-ui,sans-serif';
+    ctx.fillText('Score ' + score, CW / 2, CH / 2 + 12);
+    if (score > best) {
+      best = score;
+      try {
+        localStorage.setItem('samOSArcadeSnakeBest', String(best));
+      } catch (e) {}
+      if (bestEl) bestEl.textContent = String(best);
+      playMacSound('whit', { vol: 0.55 });
+      ctx.font = '12px Geneva,Chicago,system-ui,sans-serif';
+      ctx.fillText('New best!', CW / 2, CH / 2 + 34);
+    }
+  }
+
+  function tick() {
+    arcadeTimers.snakeTimer = null;
+    if (!running || !document.getElementById('arcade-snake-canvas')) {
+      arcadeClearSnake();
+      return;
     }
     dir = nextDir;
-    const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
-    if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows ||
-        snake.some(s => s.x===head.x && s.y===head.y)) {
-      ctx.fillStyle = 'rgba(255,0,0,0.3)'; ctx.fillRect(0,0,280,280);
-      ctx.fillStyle = '#00ff41'; ctx.font = 'bold 20px monospace';
-      ctx.textAlign = 'center'; ctx.fillText('GAME OVER', 140, 130);
-      ctx.font = '14px monospace'; ctx.fillText('Score: ' + score, 140, 160);
-      document.removeEventListener('keydown', handler);
-      running = false; return;
+    const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+    const hitWall = head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows;
+    const bite = snake.slice(0, -1).some(s => s.x === head.x && s.y === head.y);
+    if (hitWall || bite) {
+      gameOver(hitWall ? 'WALL!' : 'BITE!');
+      return;
     }
+
     snake.unshift(head);
+    let ate = false;
     if (head.x === food.x && head.y === food.y) {
-      score++; food = rndFood();
-      const el = document.getElementById('snake-score');
-      if (el) el.textContent = score;
-    } else snake.pop();
+      ate = true;
+      score++;
+      if (scoreEl) scoreEl.textContent = String(score);
+      food = placeFood();
+      playMacSound('bip', { vol: 0.55 });
+    }
+    if (!ate) snake.pop();
 
-    ctx.fillStyle = '#0a0a0a'; ctx.fillRect(0,0,280,280);
-    // Grid
-    ctx.strokeStyle = 'rgba(0,255,65,0.05)';
-    for (let i=0; i<cols; i++) { ctx.beginPath(); ctx.moveTo(i*sz,0); ctx.lineTo(i*sz,280); ctx.stroke(); }
-    for (let i=0; i<rows; i++) { ctx.beginPath(); ctx.moveTo(0,i*sz); ctx.lineTo(280,i*sz); ctx.stroke(); }
-    // Food
-    ctx.fillStyle = '#ff4444';
-    ctx.shadowColor = '#ff4444'; ctx.shadowBlur = 8;
-    ctx.fillRect(food.x*sz+1, food.y*sz+1, sz-2, sz-2);
-    ctx.shadowBlur = 0;
-    // Snake
-    snake.forEach((s, i) => {
-      const g = ctx.createLinearGradient(s.x*sz, s.y*sz, s.x*sz+sz, s.y*sz+sz);
-      g.addColorStop(0, i===0 ? '#88ff88' : '#00ff41');
-      g.addColorStop(1, i===0 ? '#00ff41' : '#00aa20');
-      ctx.fillStyle = g;
-      ctx.shadowColor = '#00ff41'; ctx.shadowBlur = i===0?12:4;
-      ctx.fillRect(s.x*sz+1, s.y*sz+1, sz-2, sz-2);
-    });
-    ctx.shadowBlur = 0;
-
-    setTimeout(draw, 120);
+    paint();
+    const delay = Math.max(64, 125 - score * 3);
+    arcadeTimers.snakeTimer = setTimeout(tick, delay);
   }
-  draw();
+
+  paint();
+  arcadeTimers.snakeTimer = setTimeout(tick, Math.max(64, 125));
 }
+
+function startArcadePong() {
+  const canvas = document.getElementById('arcade-pong-canvas');
+  if (!canvas) return;
+  arcadeClearPong();
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+  const pw = 12;
+  const ph = 56;
+  const ball = 10;
+  const aiSpeed = 5.85;
+  const keys = { w: false, s: false };
+
+  let lx = 18;
+  let ly = H / 2 - ph / 2;
+  let ry = H / 2 - ph / 2;
+  let bx = W / 2;
+  let by = H / 2;
+  let bvx = 3.6 * (Math.random() > 0.5 ? 1 : -1);
+  let bvy = (Math.random() - 0.6) * 3.6;
+  let scL = 0;
+  let scR = 0;
+  const winAt = 7;
+  arcadeTimers.pongRun = true;
+
+  const lblL = document.getElementById('arcade-pong-l');
+  const lblR = document.getElementById('arcade-pong-r');
+  const btn = document.getElementById('arcade-pong-btn');
+  if (btn) btn.textContent = '↺ New match';
+
+  function syncScore() {
+    if (lblL) lblL.textContent = String(scL);
+    if (lblR) lblR.textContent = String(scR);
+  }
+
+  syncScore();
+
+  arcadeTimers.pongKd = function (e) {
+    if (!arcadeTimers.pongRun) return;
+    if (e.code === 'KeyW') keys.w = true;
+    if (e.code === 'KeyS') keys.s = true;
+    if (e.code === 'KeyW' || e.code === 'KeyS') e.preventDefault();
+  };
+  arcadeTimers.pongKu = function (e) {
+    if (e.code === 'KeyW') keys.w = false;
+    if (e.code === 'KeyS') keys.s = false;
+  };
+  document.addEventListener('keydown', arcadeTimers.pongKd);
+  document.addEventListener('keyup', arcadeTimers.pongKu);
+
+  function resetBallToward(receiver) {
+    bx = W / 2;
+    by = H / 2;
+    const sign = receiver === 'right' ? -1 : 1;
+    bvx = sign * (3.4 + Math.random() * 0.6);
+    bvy = (Math.random() - 0.5) * 3.2;
+  }
+
+  function drawFrame(overlayTitle) {
+    ctx.fillStyle = '#f7f7f7';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = '#000';
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.moveTo(W / 2, 0);
+    ctx.lineTo(W / 2, H);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#000';
+    ctx.fillRect(lx, ly, pw, ph);
+    ctx.fillRect(W - lx - pw, ry, pw, ph);
+
+    ctx.fillRect(Math.round(bx - ball / 2), Math.round(by - ball / 2), ball, ball);
+
+    if (overlayTitle) {
+      ctx.fillStyle = 'rgba(252,252,252,0.94)';
+      ctx.fillRect(W / 2 - 132, H / 2 - 52, 264, 96);
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(W / 2 - 132, H / 2 - 52, 264, 96);
+      ctx.fillStyle = '#000';
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 17px Geneva,Chicago,sans-serif';
+      ctx.fillText(overlayTitle.title, W / 2, H / 2 - 12);
+      ctx.font = '13px Geneva,Chicago,sans-serif';
+      ctx.fillText(overlayTitle.sub, W / 2, H / 2 + 16);
+    }
+  }
+
+  function step() {
+    arcadeTimers.pongRAF = null;
+    if (!canvas.isConnected || !arcadeTimers.pongRun) return;
+
+    if (keys.w) ly -= 6.8;
+    if (keys.s) ly += 6.8;
+    ly = Math.max(10, Math.min(H - ph - 10, ly));
+
+    const aim = by - ph / 2;
+    if (bvx > 0) {
+      if (ry < aim - 4) ry += aiSpeed;
+      else if (ry > aim + 4) ry -= aiSpeed;
+    } else {
+      const hc = H / 2 - ph / 2;
+      if (ry < hc - 3) ry += aiSpeed * 0.42;
+      else if (ry > hc + 3) ry -= aiSpeed * 0.42;
+    }
+    ry = Math.max(10, Math.min(H - ph - 10, ry));
+
+    bx += bvx;
+    by += bvy;
+
+    if (by < ball || by > H - ball) {
+      bvy = -bvy;
+      by = Math.max(ball, Math.min(H - ball, by));
+      playMacSound('boing', { vol: 0.35 });
+    }
+
+    const rPadX = W - lx - pw;
+    if (
+      bvx < 0 &&
+      bx - ball / 2 <= lx + pw &&
+      bx - ball / 2 >= lx - 6 &&
+      by > ly &&
+      by < ly + ph
+    ) {
+      bx = lx + pw + ball / 2 + 2;
+      bvx = Math.abs(bvx) * 1.045;
+      bvy += (Math.random() - 0.5) * 1.1;
+      playMacSound('pong', { vol: 0.65 });
+    } else if (
+      bvx > 0 &&
+      bx + ball / 2 >= rPadX &&
+      bx + ball / 2 <= rPadX + pw + 6 &&
+      by > ry &&
+      by < ry + ph
+    ) {
+      bx = rPadX - ball / 2 - 2;
+      bvx = -Math.abs(bvx) * 1.045;
+      bvy += (Math.random() - 0.5) * 1.1;
+      playMacSound('pong', { vol: 0.65 });
+    }
+
+    let ended = '';
+    let sub = '';
+    if (bx < -ball) {
+      scR++;
+      syncScore();
+      playMacSound('wildEep', { vol: 0.52 });
+      if (scR >= winAt) {
+        arcadeTimers.pongRun = false;
+        ended = 'Mac wins!';
+        sub = 'Nice try!';
+      } else {
+        resetBallToward('left');
+      }
+    } else if (bx > W + ball) {
+      scL++;
+      syncScore();
+      playMacSound('bip', { vol: 0.55 });
+      if (scL >= winAt) {
+        arcadeTimers.pongRun = false;
+        ended = 'You win!';
+        sub = 'Macintosh approves!';
+        playMacSound('boing', { vol: 0.5 });
+      } else {
+        resetBallToward('right');
+      }
+    }
+
+    if (ended) {
+      drawFrame({ title: ended, sub });
+      document.removeEventListener('keydown', arcadeTimers.pongKd);
+      document.removeEventListener('keyup', arcadeTimers.pongKu);
+      arcadeTimers.pongKd = null;
+      arcadeTimers.pongKu = null;
+      return;
+    }
+
+    drawFrame();
+    arcadeTimers.pongRAF = requestAnimationFrame(step);
+  }
+
+  drawFrame();
+  arcadeTimers.pongRAF = requestAnimationFrame(step);
+}
+
 
 const PB_EFFECTS = [
   { id: 'vintage', name: 'Sepia booth' },
@@ -3397,7 +3789,7 @@ function renderDesktopIcons() {
       ? `<div class="icon-label-row"><span class="icon-priority-dot" title="Featured" aria-hidden="true"></span><div class="icon-label">${p.name}</div></div>`
       : `<div class="icon-label">${p.name}</div>`;
     icon.innerHTML = `
-      <div class="icon-img">${desktopItemIconMarkup(p)}</div>
+      <div class="icon-img" style="background:${p.color}">${desktopItemIconMarkup(p)}</div>
       ${labelHtml}
     `;
     icon.addEventListener('mousedown', e => {
@@ -3454,7 +3846,8 @@ document.querySelectorAll('.dock-icon').forEach(icon => {
       case 'stickies': openStickies(); break;
       case 'calculator': openCalculator(); break;
       case 'clock': openClock(); break;
-      case 'snake': openSnake(); break;
+      case 'arcade': openArcade('snake'); break;
+      case 'credits': openCredits(); break;
       case 'photobooth': openPhotoBooth(); break;
       case 'photos': openPhotos(); break;
     }
@@ -3506,6 +3899,9 @@ function initMenubar() {
     <div class="mb-dd-sep"></div>
     <div class="mb-dd-item" onclick="closeAllMenus();openPhotoBooth();">📷 Photo Booth</div>
     <div class="mb-dd-item" onclick="closeAllMenus();openPhotos();">🖼️ Photos</div>
+    <div class="mb-dd-sep"></div>
+    <div class="mb-dd-item" onclick="closeAllMenus();openArcade('snake');">🕹️ Arcade</div>
+    <div class="mb-dd-item" onclick="closeAllMenus();openCredits();">✦ Credits</div>
     <div class="mb-dd-sep"></div>
     <div class="mb-dd-item muted">Sleep… · Restart… (stub)</div>
   `;
@@ -3596,7 +3992,7 @@ document.getElementById('desktop').addEventListener('contextmenu', e => {
     <div class="ctx-separator"></div>
     <div class="ctx-item" onclick="openCalculator()">🔢 Calculator</div>
     <div class="ctx-item" onclick="openClock()">🕐 World Clock</div>
-    <div class="ctx-item" onclick="openSnake()">🐍 Snake</div>
+    <div class="ctx-item" onclick="openArcade('snake')">🕹️ Arcade</div>
     <div class="ctx-separator"></div>
     <div class="ctx-item" onclick="changeWallpaper()">🎨 Change Wallpaper</div>
   `;
