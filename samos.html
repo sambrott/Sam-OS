@@ -753,6 +753,37 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
 }
 
+.browser-bookmarks {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 6px;
+  min-height: 28px;
+  background: linear-gradient(180deg, #f3f3f3 0%, #e8e8e8 100%);
+  border-bottom: 1px solid rgba(0,0,0,0.16);
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+.browser-bookmark {
+  flex: 0 0 auto;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.18);
+  background: linear-gradient(180deg, #fff 0%, #f0f0f0 100%);
+  font-size: 11px;
+  font-family: inherit;
+  color: #222;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.browser-bookmark:hover { filter: brightness(1.04); }
+.browser-bookmark:active { filter: brightness(0.97); }
+
 .browser-tabs {
   height: 24px;
   background: linear-gradient(180deg, #d4d4d4 0%, #c0c0c0 100%);
@@ -1537,36 +1568,25 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
 .photos-grid {
   flex: 1;
   overflow: auto;
-  padding: 16px 18px 20px;
+  padding: 10px 12px 16px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 14px;
   align-items: stretch;
   background: #ffffff;
 }
-.photos-thumb {
-  position: relative;
-  width: 100%;
-  padding: 0;
-  margin: 0;
-  border: none;
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: zoom-in;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.06);
-}
-.photos-thumb:focus-visible {
-  outline: 3px solid #0a84ff;
-  outline-offset: 2px;
-  z-index: 1;
-}
-.photos-thumb img {
+/* Feed: plain images only — scale with window width (height: auto). */
+.photos-feed-img {
   width: 100%;
   height: auto;
-  vertical-align: top;
   display: block;
-  pointer-events: none;
+  border-radius: 10px;
+  box-shadow: none;
+  outline: none;
+}
+.photos-feed-img:focus-visible {
+  outline: 3px solid #0a84ff;
+  outline-offset: 3px;
 }
 .photos-empty {
   flex: 1;
@@ -1592,40 +1612,6 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
   padding: 2px 5px;
   border-radius: 4px;
 }
-.photos-lightbox {
-  position: absolute;
-  inset: 0;
-  z-index: 50;
-  background: rgba(0,0,0,0.92);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.photos-lightbox[hidden] { display: none !important; }
-.photos-lightbox img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  border-radius: 4px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-}
-.photos-lightbox-close {
-  position: absolute;
-  top: 10px; right: 14px;
-  border: none;
-  background: rgba(255,255,255,0.15);
-  color: #fff;
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  font-size: 22px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.photos-lightbox-close:hover { background: rgba(255,255,255,0.28); }
 
 .photo-booth-window .window-body { padding: 0 !important; background: #111 !important; overflow: hidden !important; }
 
@@ -1972,11 +1958,14 @@ const PHOTOS_ALL_SORTED = [
   'photos/000288970033.jpg',
   'photos/000288970034.jpeg',
   'photos/000288970035.jpeg',
+  'photos/000294800001.png',
   'photos/000294800006.jpg',
   'photos/000294800007.jpg',
+  'photos/000294800016.png',
   'photos/000294800018.jpg',
   'photos/000294800022.jpg',
   'photos/000294800024.jpg',
+  'photos/000294800025.png',
   'photos/000294800028.jpg',
   'photos/000305560004.jpg',
   'photos/000305560011.jpg',
@@ -1989,40 +1978,35 @@ const PHOTOS_ALL_SORTED = [
   'photos/IMG_9176.JPG',
   'photos/IMG_9177.JPG',
   'photos/IMG_9178.JPG',
-  'photos/IMG_9180.JPG'
+  'photos/IMG_9180.JPG',
 ];
 
 const PHOTOS_ALBUMS = [
   { id: 'all', name: 'All photos', photos: [...PHOTOS_ALL_SORTED] },
-  {
-    id: 'roll-28896',
-    name: 'Roll 28896',
-    photos: PHOTOS_ALL_SORTED.filter(p => p.includes('/000288960'))
-  },
-  {
-    id: 'roll-28897',
-    name: 'Roll 28897',
-    photos: PHOTOS_ALL_SORTED.filter(p => p.includes('/000288970'))
-  },
-  {
-    id: 'roll-29480',
-    name: 'Roll 29480',
-    photos: PHOTOS_ALL_SORTED.filter(p => p.includes('/000294800'))
-  },
-  {
-    id: 'roll-30556',
-    name: 'Roll 30556',
-    photos: PHOTOS_ALL_SORTED.filter(p => p.includes('/000305560'))
-  },
-  {
-    id: 'digital',
-    name: 'Digital',
-    photos: PHOTOS_ALL_SORTED.filter(p => p.includes('/IMG_'))
-  }
+  { id: 'archive', name: 'Archive', photos: [] },
+  { id: 'experiments', name: 'Experiments', photos: [] },
+  { id: 'food', name: 'Food', photos: [] },
+  { id: 'travel', name: 'Travel', photos: [] }
 ];
 
 const SAMIUM_ID = 'samium';
 const SAMIUM_SOCIAL_ID = 'samium-social';
+
+/** Samium favorites bar (shown under the address toolbar). */
+const SAMIUM_BOOKMARKS = [
+  { label: 'Forma', url: 'https://www.forma.cool/' },
+  { label: 'Overprint', url: 'https://overprint.design/' },
+  { label: 'Portfolio', url: 'https://sambrott.com/' },
+  { label: 'The Fridge', url: 'https://fridge-delta-one.vercel.app/' },
+  { label: 'Fruit World', url: 'https://fruit-world-eight.vercel.app/' },
+  { label: 'Wikipedia', url: 'https://www.wikipedia.org/' },
+  { label: 'YouTube', url: 'https://www.youtube.com/' },
+  { label: 'GitHub', url: 'https://github.com/sambrott' },
+  { label: 'X', url: 'https://x.com/sam__brott' },
+  { label: 'Instagram', url: 'https://www.instagram.com/sam.brott/' },
+  { label: 'LinkedIn', url: 'https://www.linkedin.com/in/sam-brott-970828155/' }
+];
+
 const samiumStates = {};
 function ensureSamiumState(winId) {
   if (!samiumStates[winId]) {
@@ -2495,6 +2479,7 @@ function samiumWindowInnerHtml(winId) {
           onkeydown="if(event.key==='Enter')samiumGo(${w})" />
         <button type="button" class="go-btn" onclick="samiumGo(${w})">Go</button>
       </div>
+      <div class="browser-bookmarks" role="toolbar" aria-label="Bookmarks">${samiumBookmarksBarHtml(winId)}</div>
       <div class="browser-loading sam-loading"></div>
       <div class="browser-body sam-browser-body"></div>
     </div>
@@ -2523,6 +2508,14 @@ function samiumEscapeAttr(s) {
     .replace(/&/g, '&amp;')
     .replace(/"/g, '&quot;')
     .replace(/</g, '&lt;');
+}
+
+function samiumBookmarksBarHtml(winId) {
+  const w = JSON.stringify(winId);
+  return SAMIUM_BOOKMARKS.map(b => {
+    const t = samiumEscapeAttr(b.label);
+    return `<button type="button" class="browser-bookmark" title="${t}" onclick="samiumNavigate(${JSON.stringify(b.url)}, ${w})">${t}</button>`;
+  }).join('');
 }
 
 function samiumRenderTabs(winId) {
@@ -4129,9 +4122,6 @@ function photosSelectAlbum(albumId, winRoot) {
   const label = winRoot.querySelector('#photos-album-label');
   const meta = winRoot.querySelector('#photos-meta');
   const empty = winRoot.querySelector('#photos-empty');
-  const lb = winRoot.querySelector('#photos-lightbox');
-  const lbImg = winRoot.querySelector('#photos-lightbox-img');
-  if (lb && !lb.hasAttribute('hidden')) { lb.setAttribute('hidden', ''); if (lbImg) lbImg.src = ''; }
   if (!grid || !album) return;
   if (label) label.textContent = album.name;
   if (meta) meta.textContent = album.photos.length ? `${album.photos.length} ${album.photos.length === 1 ? 'photo' : 'photos'}` : '';
@@ -4145,22 +4135,26 @@ function photosSelectAlbum(albumId, winRoot) {
   if (empty) empty.hidden = true;
   const frag = document.createDocumentFragment();
   album.photos.forEach((src, i) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'photos-thumb';
-    btn.setAttribute('aria-label', 'Photo ' + (i + 1));
     const img = document.createElement('img');
-    img.src = src;
+    img.className = 'photos-feed-img';
+    img.setAttribute('aria-label', 'Photo ' + (i + 1));
+    const resolvedSrc = /^(https?:|data:|blob:)/i.test(src)
+      ? src
+      : new URL(src.replace(/^\/+/, ''), window.location.href).href;
+    img.src = resolvedSrc;
+    img.onerror = () => {
+      if (!img.dataset.fallbackTried) {
+        img.dataset.fallbackTried = '1';
+        const fallback = src.startsWith('/') ? src.slice(1) : ('/' + src);
+        img.src = /^(https?:|data:|blob:)/i.test(fallback)
+          ? fallback
+          : new URL(fallback.replace(/^\/+/, ''), window.location.href).href;
+      }
+    };
     img.alt = '';
     img.loading = 'lazy';
     img.decoding = 'async';
-    btn.appendChild(img);
-    btn.addEventListener('click', () => {
-      if (!lb || !lbImg) return;
-      lbImg.src = src;
-      lb.removeAttribute('hidden');
-    });
-    frag.appendChild(btn);
+    frag.appendChild(img);
   });
   grid.appendChild(frag);
 }
@@ -4170,12 +4164,6 @@ function wirePhotosApp(winRoot) {
   if (!winRoot) return;
 
   const list = winRoot.querySelector('#photos-album-list');
-  const lb = winRoot.querySelector('#photos-lightbox');
-  const lbImg = winRoot.querySelector('#photos-lightbox-img');
-  const closeLb = () => {
-    if (lb) lb.setAttribute('hidden', '');
-    if (lbImg) lbImg.src = '';
-  };
   if (list) {
     list.querySelectorAll('.photos-album').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -4184,11 +4172,6 @@ function wirePhotosApp(winRoot) {
         photosSelectAlbum(btn.getAttribute('data-album-id'), winRoot);
       });
     });
-  }
-  const closeBtn = winRoot.querySelector('.photos-lightbox-close');
-  if (closeBtn) closeBtn.addEventListener('click', e => { e.stopPropagation(); closeLb(); });
-  if (lb) {
-    lb.addEventListener('click', e => { if (e.target === lb) closeLb(); });
   }
 }
 
@@ -4219,10 +4202,6 @@ function openPhotos() {
           This folder is empty. Add files under <code>photos/</code> and update <code>PHOTOS_ALBUMS</code> in <code>samos.html</code>.
         </div>
       </main>
-      <div class="photos-lightbox" id="photos-lightbox" hidden>
-        <button type="button" class="photos-lightbox-close" aria-label="Close">&times;</button>
-        <img id="photos-lightbox-img" alt="" />
-      </div>
     </div>
   `;
   createWindow({
@@ -4633,7 +4612,7 @@ function wireGlobalUISounds() {
     if (e.target.closest('.retro-push')) return void playUISound('tap');
     if (e.target.closest('.calc-btn')) return void playUISound('menuPick');
 
-    const b = e.target.closest('.finder-file, .pb-filter-tile, .photo-booth-layout button, .photos-thumb, .photos-album');
+    const b = e.target.closest('.finder-file, .pb-filter-tile, .photo-booth-layout button, .photos-feed-img, .photos-album');
     if (b) playUISound('tap');
 
     if (e.target.closest('.btn:not(.muted)')) playUISound('tap');
