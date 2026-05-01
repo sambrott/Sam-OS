@@ -2021,6 +2021,7 @@ const PHOTOS_ALL_SORTED = [
   'photos/000288970005.jpg',
   'photos/000288970006.jpg',
   'photos/000288970007.jpg',
+  'photos/000288970008.png',
   'photos/000288970016.jpg',
   'photos/000288970024.jpg',
   'photos/000288970026.jpeg',
@@ -2083,7 +2084,6 @@ const SAMIUM_BOOKMARK_GROUPS = (() => {
       id: 'social',
       label: 'Social',
       items: [
-        { label: 'GitHub', url: 'https://github.com/sambrott' },
         { label: 'X', url: 'https://x.com/sam__brott' },
         { label: 'Instagram', url: 'https://www.instagram.com/sam.brott/' },
         { label: 'LinkedIn', url: 'https://www.linkedin.com/in/sam-brott-970828155/' }
@@ -2702,6 +2702,7 @@ function samiumBookmarksOpenPortalMenu(bar, winId, folderBtn, folderId) {
   menu.className = 'browser-bm-folder-menu browser-bm-folder-menu--portal';
   menu.setAttribute('role', 'menu');
   menu.dataset.samWin = winId;
+  menu.dataset.bmFolder = folderId;
   menu.innerHTML = g.items.map(b => {
     const tl = samiumEscapeAttr(b.label);
     const u = samiumEscapeAttr(b.url);
@@ -2715,9 +2716,16 @@ function samiumBookmarksOpenPortalMenu(bar, winId, folderBtn, folderId) {
     e.preventDefault();
     const url = link.getAttribute('data-url');
     const wid = menu.dataset.samWin || winId;
+    const folderKind = menu.dataset.bmFolder;
     if (url) {
       playUISound('tap');
-      samiumNavigate(url, wid);
+      if (folderKind === 'social') {
+        try {
+          window.open(url, '_blank', 'noopener,noreferrer');
+        } catch (_) { /* ignore */ }
+      } else {
+        samiumNavigate(url, wid);
+      }
     }
     samiumBookmarksCloseMenus();
   });
@@ -2868,6 +2876,25 @@ function samiumTabTitleFromUrl(url) {
   }
 }
 
+/** Does not reliably run inside Samium’s iframe (CSP / sensor APIs) — send to the real browser. */
+function samiumHostOpensExternalOnly(url) {
+  try {
+    const u = new URL(String(url).trim());
+    const h = u.hostname.replace(/^www\./i, '').toLowerCase();
+    return h === 'fruit-world-eight.vercel.app';
+  } catch (_) {
+    return false;
+  }
+}
+
+function samiumOpenEmbeddedBlockedInSystemBrowser(url) {
+  playUISound('tap');
+  samiumBookmarksCloseMenus();
+  try {
+    window.open(String(url).trim(), '_blank', 'noopener,noreferrer');
+  } catch (_) { /* ignore */ }
+}
+
 function normalizeSamiumUrl(raw) {
   let url = String(raw).trim();
   if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
@@ -2897,6 +2924,12 @@ function samiumApplySandbox(iframe, url) {
 
 function samiumLoadUrlIntoBody(url, pushHistory, winId = SAMIUM_ID) {
   url = normalizeSamiumUrl(url);
+  if (samiumHostOpensExternalOnly(url)) {
+    samiumOpenEmbeddedBlockedInSystemBrowser(url);
+    const loadingEarly = samiumQ(winId, '.sam-loading');
+    if (loadingEarly) loadingEarly.classList.remove('active');
+    return;
+  }
   const bodyRoot = samiumQ(winId, '.sam-browser-body');
   const loading = samiumQ(winId, '.sam-loading');
   const urlInput = samiumQ(winId, '.sam-url');
@@ -2957,6 +2990,11 @@ function openSamium(initialUrl, openInNewTab, winId = SAMIUM_ID) {
   if (document.getElementById(winId)) {
     bringToFront(winId);
     if (!initialUrl) return;
+    const iuNorm = normalizeSamiumUrl(initialUrl);
+    if (samiumHostOpensExternalOnly(iuNorm)) {
+      samiumOpenEmbeddedBlockedInSystemBrowser(iuNorm);
+      return;
+    }
     if (openInNewTab) samiumNewTab(initialUrl, winId);
     else samiumNavigate(initialUrl, winId);
     return;
@@ -2980,29 +3018,29 @@ function openSamium(initialUrl, openInNewTab, winId = SAMIUM_ID) {
   samiumEnsurePanelForTab(winId, 0);
   samiumSyncPanelVisibility(winId);
   samiumRenderTabs(winId);
-  if (initialUrl) samiumNavigate(initialUrl, winId);
+  if (initialUrl) {
+    const nu = normalizeSamiumUrl(initialUrl);
+    if (samiumHostOpensExternalOnly(nu)) {
+      samiumOpenEmbeddedBlockedInSystemBrowser(nu);
+      samiumShowNewTabPage(winId);
+    } else samiumNavigate(nu, winId);
+  }
   else samiumShowNewTabPage(winId);
 }
 
 /** Main Samium: open or add tab (portfolio / projects). */
 function samiumOpenUrlInNewTab(url, winId = SAMIUM_ID) {
+  const nu = normalizeSamiumUrl(url);
+  if (samiumHostOpensExternalOnly(nu)) {
+    samiumOpenEmbeddedBlockedInSystemBrowser(nu);
+    return;
+  }
   if (!document.getElementById(winId)) openSamium(url, false, winId);
   else {
     playUISound('tap');
     bringToFront(winId);
     samiumNewTab(url, winId);
   }
-}
-
-/** Dock X / Instagram / LinkedIn: separate browser window so it stays apart from project browsing. */
-function openSamiumSocial(url) {
-  const id = SAMIUM_SOCIAL_ID;
-  if (!document.getElementById(id)) {
-    openSamium(url || undefined, false, id);
-    return;
-  }
-  bringToFront(id);
-  if (url) samiumNewTab(url, id);
 }
 
 function samiumNavigate(url, winId = SAMIUM_ID) {
@@ -4569,9 +4607,11 @@ function openDockQuickLink(url) {
   try {
     const u = new URL(url);
     const h = u.hostname.replace(/^www\./i, '').toLowerCase();
-    const useSocialSamium = h === 'x.com' || h === 'twitter.com' || h === 'instagram.com' || h === 'linkedin.com';
-    if (useSocialSamium) {
-      openSamiumSocial(url);
+    const externalSocial = h === 'x.com' || h === 'twitter.com' || h === 'instagram.com' || h === 'linkedin.com';
+    if (externalSocial) {
+      try {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } catch (_) { /* ignore */ }
       return;
     }
     samiumOpenUrlInNewTab(url);
