@@ -2876,25 +2876,6 @@ function samiumTabTitleFromUrl(url) {
   }
 }
 
-/** Does not reliably run inside Samium’s iframe (CSP / sensor APIs) — send to the real browser. */
-function samiumHostOpensExternalOnly(url) {
-  try {
-    const u = new URL(String(url).trim());
-    const h = u.hostname.replace(/^www\./i, '').toLowerCase();
-    return h === 'fruit-world-eight.vercel.app';
-  } catch (_) {
-    return false;
-  }
-}
-
-function samiumOpenEmbeddedBlockedInSystemBrowser(url) {
-  playUISound('tap');
-  samiumBookmarksCloseMenus();
-  try {
-    window.open(String(url).trim(), '_blank', 'noopener,noreferrer');
-  } catch (_) { /* ignore */ }
-}
-
 function normalizeSamiumUrl(raw) {
   let url = String(raw).trim();
   if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
@@ -2914,22 +2895,33 @@ function normalizeSamiumUrl(raw) {
 }
 
 function samiumApplySandbox(iframe, url) {
+  iframe.removeAttribute('allow');
+  iframe.removeAttribute('allowfullscreen');
+  try {
+    const u = new URL(url);
+    const h = u.hostname.replace(/^www\./i, '').toLowerCase();
+    const samiumPrivilegedEmbedHosts = new Set([
+      'fruit-world-eight.vercel.app',
+      'wheelspin-rho.vercel.app'
+    ]);
+    if (samiumPrivilegedEmbedHosts.has(h)) {
+      iframe.removeAttribute('sandbox');
+      iframe.setAttribute('allowfullscreen', '');
+      iframe.setAttribute('allow',
+        'accelerometer; gyroscope; magnetometer; fullscreen; autoplay; encrypted-media; xr-spatial-tracking; pointer-lock; clipboard-read; clipboard-write');
+      return;
+    }
+  } catch (e) { /* noop */ }
   const isYtEmbed = /youtube\.com\/embed/i.test(url);
-  if (!isYtEmbed) {
-    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
-  } else {
+  if (isYtEmbed) {
     iframe.removeAttribute('sandbox');
+    return;
   }
+  iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
 }
 
 function samiumLoadUrlIntoBody(url, pushHistory, winId = SAMIUM_ID) {
   url = normalizeSamiumUrl(url);
-  if (samiumHostOpensExternalOnly(url)) {
-    samiumOpenEmbeddedBlockedInSystemBrowser(url);
-    const loadingEarly = samiumQ(winId, '.sam-loading');
-    if (loadingEarly) loadingEarly.classList.remove('active');
-    return;
-  }
   const bodyRoot = samiumQ(winId, '.sam-browser-body');
   const loading = samiumQ(winId, '.sam-loading');
   const urlInput = samiumQ(winId, '.sam-url');
@@ -2990,11 +2982,6 @@ function openSamium(initialUrl, openInNewTab, winId = SAMIUM_ID) {
   if (document.getElementById(winId)) {
     bringToFront(winId);
     if (!initialUrl) return;
-    const iuNorm = normalizeSamiumUrl(initialUrl);
-    if (samiumHostOpensExternalOnly(iuNorm)) {
-      samiumOpenEmbeddedBlockedInSystemBrowser(iuNorm);
-      return;
-    }
     if (openInNewTab) samiumNewTab(initialUrl, winId);
     else samiumNavigate(initialUrl, winId);
     return;
@@ -3018,23 +3005,12 @@ function openSamium(initialUrl, openInNewTab, winId = SAMIUM_ID) {
   samiumEnsurePanelForTab(winId, 0);
   samiumSyncPanelVisibility(winId);
   samiumRenderTabs(winId);
-  if (initialUrl) {
-    const nu = normalizeSamiumUrl(initialUrl);
-    if (samiumHostOpensExternalOnly(nu)) {
-      samiumOpenEmbeddedBlockedInSystemBrowser(nu);
-      samiumShowNewTabPage(winId);
-    } else samiumNavigate(nu, winId);
-  }
+  if (initialUrl) samiumNavigate(initialUrl, winId);
   else samiumShowNewTabPage(winId);
 }
 
 /** Main Samium: open or add tab (portfolio / projects). */
 function samiumOpenUrlInNewTab(url, winId = SAMIUM_ID) {
-  const nu = normalizeSamiumUrl(url);
-  if (samiumHostOpensExternalOnly(nu)) {
-    samiumOpenEmbeddedBlockedInSystemBrowser(nu);
-    return;
-  }
   if (!document.getElementById(winId)) openSamium(url, false, winId);
   else {
     playUISound('tap');
