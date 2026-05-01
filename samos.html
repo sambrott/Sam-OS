@@ -255,21 +255,21 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
 
 .icon-img {
   width: 72px; height: 72px;
-  border-radius: 15px;
+  border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
   font-size: 39px;
-  box-shadow:
-    0 4px 12px rgba(0,0,0,0.4),
-    0 1px 0 rgba(255,255,255,0.5) inset,
-    0 -1px 0 rgba(0,0,0,0.2) inset;
+  background: transparent;
+  box-shadow: none;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
+
+#desktop-icons .icon-img {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.65));
+}
+
 .icon-img::after {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 50%;
-  background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent);
-  border-radius: 15px 15px 0 0;
+  display: none;
 }
 
 .icon-img > svg.icon-fridge {
@@ -365,16 +365,38 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
   border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   font-size: 30px;
-  box-shadow:
-    0 4px 12px rgba(0,0,0,0.4),
-    0 1px 0 rgba(255,255,255,0.5) inset;
-  position: relative; overflow: hidden;
+  background: transparent;
+  box-shadow: none;
+  position: relative;
+  overflow: visible;
 }
+
+#dock .dock-icon-img {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6));
+}
+
 .dock-icon-img::after {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 50%;
-  background: linear-gradient(180deg, rgba(255,255,255,0.3), transparent);
-  border-radius: 12px 12px 0 0;
+  display: none;
+}
+
+.dock-icon-img .dock-brand-x,
+.dock-icon-img.dock-brand-text {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 800;
+  color: rgba(245,245,247,0.98);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85), 0 0 12px rgba(0, 0, 0, 0.65);
+}
+
+.dock-icon-img .dock-brand-in {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  color: rgba(245,245,247,0.98);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85), 0 0 12px rgba(0, 0, 0, 0.65);
+}
+
+.dock-icon-img svg.dock-ig-svg path {
+  fill: rgba(250,250,252,1);
 }
 
 /* Compact “folder” stack on the right — social + resume (macOS-style mini tiles) */
@@ -383,9 +405,209 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
   border-radius: 10px;
   font-size: 22px;
 }
-.dock-icon.dock-quick .dock-icon-img::after { border-radius: 10px 10px 0 0; }
+.dock-icon.dock-quick .dock-icon-img::after { display: none; }
 .dock-icon.dock-quick .dock-tooltip { font-size: 10px; }
 .dock-icon.dock-quick > .dock-dot { display: none !important; }
+
+/* ===================== TIME MACHINE ===================== */
+.timemachine-window .window-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: #0a0a10 !important;
+}
+.timemachine-root {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  background: #0c0c12;
+  color: rgba(248,248,252,0.96);
+}
+
+/* ------- Library (default) ------- */
+.timemachine-library {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 28px min(72px, 8vw) 36px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background:
+    radial-gradient(ellipse 80% 55% at 50% -10%, rgba(80,105,230,0.18), transparent 55%),
+    linear-gradient(180deg, #12121a 0%, #08080f 100%);
+}
+.tm-library-intro {
+  text-align: center;
+  max-width: 520px;
+  margin: 0 auto 20px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(255,255,255,0.55);
+}
+.timemachine-library h3 {
+  margin: 0 auto 14px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.38);
+}
+.timemachine-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(460px, 100%);
+  margin: 0 auto;
+}
+.tm-sys-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: inherit;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, transform 0.08s;
+}
+.tm-sys-btn:hover {
+  background: rgba(255,255,255,0.13);
+}
+.tm-sys-btn.active {
+  border-color: rgba(120,160,255,0.6);
+  background: rgba(55,92,212,0.28);
+}
+.timemachine-library-foot {
+  margin-top: auto;
+  padding-top: 24px;
+  text-align: right;
+  font-size: 10px;
+  line-height: 1.45;
+  color: rgba(255,255,255,0.45);
+}
+.timemachine-library-foot a {
+  color: #9ec0ff;
+  text-decoration: none;
+}
+.timemachine-library-foot a:hover {
+  text-decoration: underline;
+}
+
+/* ------- Runner: emulation fills Sam OS window body (below title bar) ------- */
+.timemachine-runner {
+  flex: 1;
+  display: none;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+  background: #000;
+}
+
+/* Floated chrome — viewport participates in layout (flex-grow) */
+.tm-float-controls {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+.tm-float-controls > * {
+  pointer-events: auto;
+}
+.tm-back-library {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(245,247,252,0.95);
+  background: rgba(14,14,22,0.82);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.45);
+}
+.tm-back-library:hover {
+  background: rgba(32,32,42,0.92);
+}
+#timemachine-runner-title {
+  flex: 1;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+}
+
+.timemachine-viewport {
+  flex: 1;
+  width: 100%;
+  min-height: 240px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, #232a38 0%, #000 70%);
+}
+
+#timemachine-frame-shell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 12px 48px rgba(0,0,0,0.65),
+    0 0 0 1px rgba(255,255,255,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #000;
+}
+
+#timemachine-frame {
+  display: block;
+  border: none;
+  background: #000;
+  vertical-align: top;
+}
+
+.tm-float-attrib {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 20;
+  max-width: min(360px, 85vw);
+  text-align: right;
+  padding: 5px 8px;
+  font-size: 10px;
+  line-height: 1.35;
+  color: rgba(255,255,255,0.72);
+  background: rgba(10,10,14,0.55);
+  border-radius: 6px;
+  border: 0.5px solid rgba(255,255,255,0.1);
+  pointer-events: auto;
+  backdrop-filter: blur(10px);
+}
+.tm-float-attrib a {
+  color: #b6d4ff;
+  text-decoration: none;
+}
+.tm-float-attrib a:hover {
+  text-decoration: underline;
+}
+
 .dock-ig-svg {
   width: 24px;
   height: 24px;
@@ -419,6 +641,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
 
 /* ===================== PROJECT WINDOW ===================== */
 .project-header {
+  background: linear-gradient(180deg, #f6f6f8 0%, #eaeaf0 100%);
   height: 160px;
   display: flex; align-items: center; justify-content: center;
   font-size: 60px;
@@ -1460,73 +1683,78 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
   <!-- DOCK -->
   <div id="dock">
     <div class="dock-icon" data-app="finder" title="Finder">
-      <div class="dock-icon-img" style="background: linear-gradient(135deg, #2196f3 0%, #1565c0 100%);">🗂️</div>
+      <div class="dock-icon-img">🗂️</div>
       <div class="dock-dot"></div>
       <div class="dock-tooltip">Finder</div>
     </div>
     <div class="dock-icon" data-app="samium" title="Samium">
-      <div class="dock-icon-img" style="background: linear-gradient(135deg, #e8f4fd 0%, #bee3f8 50%, #4299e1 100%);">🌐</div>
+      <div class="dock-icon-img">🌐</div>
       <div class="dock-dot" style="display:none"></div>
       <div class="dock-tooltip">Samium</div>
     </div>
     <div class="dock-icon" data-app="photobooth" title="Photo Booth">
-      <div class="dock-icon-img" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">📷</div>
+      <div class="dock-icon-img">📷</div>
       <div class="dock-dot" style="display:none"></div>
       <div class="dock-tooltip">Photo Booth</div>
     </div>
     <div class="dock-icon" data-app="photos" title="Photos">
-      <div class="dock-icon-img" style="background: linear-gradient(135deg, #ff375f 0%, #ff9f0a 25%, #ffd60a 45%, #30d158 60%, #0a84ff 78%, #bf5af2 100%);">🖼️</div>
+      <div class="dock-icon-img">🖼️</div>
       <div class="dock-dot" style="display:none"></div>
       <div class="dock-tooltip">Photos</div>
     </div>
     <div class="dock-separator"></div>
     <div class="dock-icon" data-app="stickies" title="Stickies">
-      <div class="dock-icon-img" style="background: linear-gradient(135deg, #fef08a 0%, #fde047 100%);">📝</div>
+      <div class="dock-icon-img">📝</div>
       <div class="dock-dot" style="display:none"></div>
       <div class="dock-tooltip">Stickies</div>
     </div>
     <div class="dock-icon" data-app="calculator" title="Calculator">
-      <div class="dock-icon-img" style="background: linear-gradient(135deg, #555 0%, #222 100%);">🔢</div>
+      <div class="dock-icon-img">🔢</div>
       <div class="dock-dot" style="display:none"></div>
       <div class="dock-tooltip">Calculator</div>
     </div>
     <div class="dock-icon" data-app="clock" title="World Clock">
-      <div class="dock-icon-img" style="background: linear-gradient(135deg, #1a1a1a 0%, #000 100%);">🕐</div>
+      <div class="dock-icon-img">🕐</div>
       <div class="dock-dot" style="display:none"></div>
       <div class="dock-tooltip">World Clock</div>
     </div>
     <div class="dock-icon" data-app="arcade" title="Arcade">
-      <div class="dock-icon-img" style="background: linear-gradient(135deg, #2b2b2b 0%, #5a4a3a 40%, #8b7355 100%);">🕹️</div>
+      <div class="dock-icon-img">🕹️</div>
       <div class="dock-dot" style="display:none"></div>
       <div class="dock-tooltip">Arcade</div>
     </div>
+    <div class="dock-icon" data-app="timemachine" title="Time Machine">
+      <div class="dock-icon-img">🕰️</div>
+      <div class="dock-dot" style="display:none"></div>
+      <div class="dock-tooltip">Time Machine</div>
+    </div>
     <div class="dock-separator"></div>
     <div class="dock-icon dock-quick" data-dock-url="https://x.com/sam__brott" title="X (Twitter)">
-      <div class="dock-icon-img" style="background: linear-gradient(135deg, #0f1419 0%, #2b2f33 100%); font-family: system-ui, -apple-system, sans-serif; font-weight: 800; font-size: 17px; color: #fff;">𝕏</div>
+      <div class="dock-icon-img dock-brand-text"><span class="dock-brand-x" style="font-size:17px" aria-hidden="true">𝕏</span></div>
       <div class="dock-tooltip">X</div>
     </div>
     <div class="dock-icon dock-quick" data-dock-url="https://www.instagram.com/sam.brott/" title="Instagram">
-      <div class="dock-icon-img" style="background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 45%, #fcb045 100%);">
+      <div class="dock-icon-img">
         <svg class="dock-ig-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill="#fff" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
       </div>
       <div class="dock-tooltip">Instagram</div>
     </div>
     <div class="dock-icon dock-quick" data-dock-url="https://www.linkedin.com/in/sam-brott-970828155/" title="LinkedIn">
-      <div class="dock-icon-img" style="background: linear-gradient(135deg, #0a66c2 0%, #004182 100%); font-family: system-ui, -apple-system, sans-serif; font-weight: 800; font-size: 16px; color: #fff;">in</div>
+      <div class="dock-icon-img dock-brand-text"><span class="dock-brand-in">in</span></div>
       <div class="dock-tooltip">LinkedIn</div>
     </div>
     <div class="dock-icon dock-quick" data-dock-file="1" data-dock-url="https://www.sambrott.com/portfolio%20site%20assets/Resume%202026.pdf" title="Résumé (opens on desktop)">
-      <div class="dock-icon-img" style="background: linear-gradient(135deg, #f5f5f7 0%, #d1d1d6 100%); font-size: 20px;">📄</div>
+      <div class="dock-icon-img" style="font-size: 20px;">📄</div>
       <div class="dock-tooltip">Résumé</div>
     </div>
     <div class="dock-separator"></div>
     <div class="dock-icon" data-app="credits" title="Credits">
-      <div class="dock-icon-img" style="background: linear-gradient(135deg, #f0f0f0 0%, #b8b8c8 100%); font-size: 20px;">✦</div>
+      <div class="dock-icon-img" style="font-size: 20px;">✦</div>
       <div class="dock-dot" style="display:none"></div>
       <div class="dock-tooltip">Credits</div>
     </div>
     <div class="dock-icon" data-app="trash" title="Trash">
-      <div class="dock-icon-img" style="background: linear-gradient(135deg, #e0e0e0 0%, #c0c0c0 100%);">🗑️</div>
+      <div class="dock-icon-img">🗑️</div>
       <div class="dock-tooltip">Trash</div>
     </div>
   </div>
@@ -1545,6 +1773,16 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
 const FRIDGE_ICON_SVG = '<svg class="icon-fridge" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 40" aria-hidden="true"><rect x="5" y="3" width="22" height="34" rx="2.5" fill="rgba(255,255,255,0.94)" stroke="rgba(0,0,0,0.38)" stroke-width="1.15"/><rect x="5" y="3" width="22" height="13" rx="2.5" fill="rgba(248,250,252,0.92)" stroke="rgba(0,0,0,0.38)" stroke-width="1.15"/><line x1="5" y1="16.5" x2="27" y2="16.5" stroke="rgba(0,0,0,0.38)" stroke-width="1"/><line x1="16" y1="16.5" x2="16" y2="37" stroke="rgba(0,0,0,0.22)" stroke-width="1"/><rect x="20" y="24" width="2.8" height="7" rx="0.6" fill="rgba(65,65,65,0.85)"/></svg>';
 
 const DESKTOP_ITEMS = [
+  {
+    id: 'time-machine',
+    name: 'Time Machine',
+    emoji: '🕰️',
+    type: 'Classic systems',
+    tags: ['PCE.js'],
+    finderTerms: 'time machine emulator classic mac system 7 pce jsdf',
+    desc: 'In-browser classics — Mac Plus, IBM PC/XT, Atari ST — via PCE.js demos hosted by James Friend.',
+    action: 'timemachine'
+  },
   {
     id: 'forma',
     name: 'Forma',
@@ -1830,7 +2068,19 @@ const MAC_SOUND_FILES = {
   uhOh: 'Uh oh.wav',
   wildEep: 'Wild Eep.wav',
   sosumi: 'Sosumi.wav',
-  whit: 'Whit.wav'
+  whit: 'Whit.wav',
+  droplet: 'Droplet.wav',
+  clinkKlank: 'Clink-Klank.wav',
+  monkey: 'Monkey.wav',
+  quack: 'Quack.wav',
+  temple: 'Temple.wav',
+  indigo: 'Indigo.wav',
+  voltage: 'Voltage.wav',
+  logjam: 'Logjam.wav',
+  chuToy: 'ChuToy.wav',
+  laugh: 'Laugh.wav',
+  moof: 'moof.wav',
+  newbip: 'newbip.wav'
 };
 
 function getMacUISoundVolume() {
@@ -1848,8 +2098,30 @@ function playMacSound(key, opts = {}) {
   a.play().catch(() => {});
 }
 
+/** Short UI cues keyed into `MAC_SOUND_FILES`. */
+const UI_SOUND = {
+  tap: { key: 'click', vol: 0.44 },
+  light: { key: 'newbip', vol: 0.39 },
+  menuPick: { key: 'bip', vol: 0.4 },
+  menubarOpen: { key: 'newbip', vol: 0.34 },
+  dock: { key: 'click', vol: 0.5 },
+  open: { key: 'droplet', vol: 0.52 },
+  close: { key: 'uhOh', vol: 0.29 },
+  min: { key: 'whit', vol: 0.42 },
+  max: { key: 'indigo', vol: 0.41 },
+  panel: { key: 'temple', vol: 0.31 },
+  wall: { key: 'chuToy', vol: 0.28 },
+  whimsy: { key: 'moof', vol: 0.45 }
+};
+function playUISound(which = 'tap') {
+  const def = UI_SOUND.tap;
+  const q = UI_SOUND[which] || def;
+  playMacSound(q.key, { vol: q.vol });
+}
+
+
 function createWindow({ id, title, icon='', x, y, w, h, content, className='', resizable=true }) {
-  if (document.getElementById(id)) { bringToFront(id); return; }
+  if (document.getElementById(id)) { playUISound('light'); bringToFront(id); return; }
   const win = document.createElement('div');
   win.className = `window ${className}`;
   win.id = id;
@@ -1873,9 +2145,9 @@ function createWindow({ id, title, icon='', x, y, w, h, content, className='', r
   bringToFront(id);
 
   // Traffic lights
-  win.querySelector('.tl-close').addEventListener('click', e => { e.stopPropagation(); closeWindow(id); });
-  win.querySelector('.tl-min').addEventListener('click', e => { e.stopPropagation(); minimizeWindow(id); });
-  win.querySelector('.tl-max').addEventListener('click', e => { e.stopPropagation(); maximizeWindow(id); });
+  win.querySelector('.tl-close').addEventListener('click', e => { e.stopPropagation(); playUISound('close'); closeWindow(id); });
+  win.querySelector('.tl-min').addEventListener('click', e => { e.stopPropagation(); playUISound('min'); minimizeWindow(id); });
+  win.querySelector('.tl-max').addEventListener('click', e => { e.stopPropagation(); playUISound('max'); maximizeWindow(id); });
 
   // Drag
   const titlebar = win.querySelector('.titlebar');
@@ -1890,6 +2162,7 @@ function createWindow({ id, title, icon='', x, y, w, h, content, className='', r
   if (resizable) {
     win.querySelector('.resize-handle').addEventListener('mousedown', e => {
       e.stopPropagation();
+      playUISound('light');
       resizeState = { id, startX: e.clientX, startY: e.clientY, startW: win.offsetWidth, startH: win.offsetHeight };
       e.preventDefault();
     });
@@ -1900,10 +2173,12 @@ function createWindow({ id, title, icon='', x, y, w, h, content, className='', r
 
   windows[id] = { minimized: false, maxed: false, prevRect: null };
   updateDockDot(id, true);
+  playUISound('open');
   return win;
 }
 
 function closeWindow(id) {
+  if (id === 'timemachine') timemachineDetachResizeObserver();
   if (id === 'arcade') arcadeDetachAllGames();
   if (id === 'photobooth' && window._pbCleanup) {
     window._pbCleanup();
@@ -2048,7 +2323,11 @@ function openDesktopItem(item) {
   const a = item.action || 'samium';
   if (a === 'dual') openDualLaunchWindow(item);
   else if (a === 'window') openProjectDetailWindow(item);
-  else if (a === 'external') window.open(item.url, '_blank');
+  else if (a === 'external') {
+    playUISound('tap');
+    window.open(item.url, '_blank');
+  }
+  else if (a === 'timemachine') openTimeMachine();
   else samiumOpenUrlInNewTab(item.url);
 }
 
@@ -2056,7 +2335,7 @@ function openProjectDetailWindow(project) {
   const id = 'project-' + project.id;
   const u = project.url.replace(/'/g, "\\'");
   const content = `
-    <div class="project-header" style="background:${project.color}">${desktopItemIconMarkup(project)}</div>
+    <div class="project-header">${desktopItemIconMarkup(project)}</div>
     <div class="project-content">
       <div class="project-title">${project.name}</div>
       <div class="project-subtitle">${project.type}</div>
@@ -2229,6 +2508,7 @@ function samiumWireTabStrip(winId) {
   strip.addEventListener('click', e => {
     const add = e.target.closest('.browser-tab-add');
     if (add) {
+      playUISound('tap');
       samiumNewTab(undefined, winId);
       return;
     }
@@ -2236,12 +2516,16 @@ function samiumWireTabStrip(winId) {
     if (closeBtn) {
       e.preventDefault();
       e.stopPropagation();
+      playUISound('min');
       const cell = closeBtn.closest('[data-sam-tab]');
       if (cell) samiumCloseTab(+cell.dataset.samTab, winId);
       return;
     }
     const cell = e.target.closest('[data-sam-tab]');
-    if (cell) samiumSwitchTab(+cell.dataset.samTab, winId);
+    if (cell) {
+      playUISound('menuPick');
+      samiumSwitchTab(+cell.dataset.samTab, winId);
+    }
   });
 }
 
@@ -2407,6 +2691,7 @@ function openSamium(initialUrl, openInNewTab, winId = SAMIUM_ID) {
 function samiumOpenUrlInNewTab(url, winId = SAMIUM_ID) {
   if (!document.getElementById(winId)) openSamium(url, false, winId);
   else {
+    playUISound('tap');
     bringToFront(winId);
     samiumNewTab(url, winId);
   }
@@ -2431,6 +2716,7 @@ function samiumGo(winId = SAMIUM_ID) {
   const urlInput = samiumQ(winId, '.sam-url');
   const val = urlInput?.value.trim();
   if (!val) return;
+  playUISound('tap');
   let url = val;
   if (!val.includes('.') || val.includes(' ')) {
     url = 'https://www.google.com/search?q=' + encodeURIComponent(val);
@@ -2635,6 +2921,175 @@ function openSnake() {
   openArcade('snake');
 }
 
+
+const TIME_MACHINE_EMBED_W = 1024;
+const TIME_MACHINE_EMBED_H = 720;
+let timemachineResizeObserver = null;
+
+function timemachineDetachResizeObserver() {
+  if (!timemachineResizeObserver) return;
+  timemachineResizeObserver.disconnect();
+  timemachineResizeObserver = null;
+}
+
+function timemachineUpdateScale() {
+  const viewport = document.getElementById('timemachine-viewport');
+  const shell = document.getElementById('timemachine-frame-shell');
+  const iframe = document.getElementById('timemachine-frame');
+  if (!viewport || !shell || !iframe) return;
+
+  var bw = TIME_MACHINE_EMBED_W;
+  var bh = TIME_MACHINE_EMBED_H;
+
+  /*
+   * Do NOT apply CSS transforms to ancestors of cross-origin emulator iframes:
+   * WebKit/Blink often compositor-blank canvases/WebGL/WASM → solid black frame.
+   * Scale using explicit iframe pixel width/height only.
+   */
+  var vw = viewport.clientWidth;
+  var vh = viewport.clientHeight;
+  var pad = 6;
+  if (vw < 24 || vh < 24) return;
+
+  var innerW = Math.max(72, vw - pad * 2);
+  var innerH = Math.max(72, vh - pad * 2);
+  var ratio = Math.min(innerW / bw, innerH / bh, 3.75);
+  if (!isFinite(ratio) || ratio <= 0) ratio = 1;
+
+  var iw = Math.max(144, Math.floor(bw * ratio));
+  var ih = Math.max(108, Math.floor(bh * ratio));
+
+  shell.style.width = iw + 'px';
+  shell.style.height = ih + 'px';
+
+  iframe.style.width = iw + 'px';
+  iframe.style.height = ih + 'px';
+  iframe.style.maxWidth = '100%';
+  iframe.style.maxHeight = '100%';
+}
+
+function timemachineAttachViewportObserver() {
+  const viewport = document.getElementById('timemachine-viewport');
+  if (!viewport || typeof ResizeObserver === 'undefined') return;
+  timemachineDetachResizeObserver();
+  timemachineResizeObserver = new ResizeObserver(() => {
+    timemachineUpdateScale();
+  });
+  timemachineResizeObserver.observe(viewport);
+  requestAnimationFrame(() => timemachineUpdateScale());
+}
+
+function timemachineSelect(btn) {
+  playUISound('menuPick');
+  const winRoot = document.getElementById('timemachine');
+  if (!winRoot || !btn) return;
+  const library = winRoot.querySelector('.timemachine-library');
+  const runner = document.getElementById('timemachine-runner');
+  const frame = document.getElementById('timemachine-frame');
+  const titleEl = document.getElementById('timemachine-runner-title');
+  const url = btn.getAttribute('data-url');
+  const label = btn.getAttribute('data-label') || '';
+  if (!library || !runner || !frame || !url) return;
+
+  winRoot.querySelectorAll('.tm-sys-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  library.setAttribute('hidden', '');
+  library.setAttribute('aria-hidden', 'true');
+
+  runner.style.display = 'flex';
+  runner.style.flex = '1';
+  runner.style.flexDirection = 'column';
+  runner.style.minHeight = '0';
+  runner.setAttribute('aria-hidden', 'false');
+
+  if (titleEl) titleEl.textContent = label;
+
+  frame.onload = function () { timemachineUpdateScale(); };
+  frame.src = url;
+
+  timemachineAttachViewportObserver();
+}
+
+function timemachineBackToLibrary() {
+  playUISound('menuPick');
+  const winRoot = document.getElementById('timemachine');
+  if (!winRoot) return;
+
+  timemachineDetachResizeObserver();
+
+  const library = winRoot.querySelector('.timemachine-library');
+  const runner = document.getElementById('timemachine-runner');
+  const frame = document.getElementById('timemachine-frame');
+
+  if (frame) frame.src = 'about:blank';
+
+  if (runner) {
+    runner.style.display = 'none';
+    runner.setAttribute('aria-hidden', 'true');
+  }
+
+  if (library) {
+    library.removeAttribute('hidden');
+    library.setAttribute('aria-hidden', 'false');
+  }
+}
+
+function openTimeMachine() {
+  const id = 'timemachine';
+  if (document.getElementById(id)) {
+    playUISound('light');
+    bringToFront(id);
+    return;
+  }
+  createWindow({
+    id,
+    title: 'Time Machine',
+    icon: '🕰️',
+    x: 80,
+    y: 48,
+    w: 980,
+    h: 640,
+    className: 'timemachine-window',
+    content: `
+      <div class="timemachine-root">
+        <div class="timemachine-library" id="timemachine-library" aria-label="Classic systems catalog">
+          <p class="tm-library-intro">Choose a host below. The emulation runs inside this Sam OS window — choose a machine to open the emulation only.</p>
+          <h3>Library</h3>
+          <nav class="timemachine-nav" role="navigation">
+            <button type="button" class="tm-sys-btn" data-url="https://jamesfriend.com.au/pce-js/" data-label="Macintosh Plus · System 7" onclick="timemachineSelect(this)">Mac Plus — System 7</button>
+            <button type="button" class="tm-sys-btn" data-url="https://jamesfriend.com.au/pce-js/pce-js-apps/" data-label="Mac Plus · apps + games" onclick="timemachineSelect(this)">Mac Plus — apps + games</button>
+            <button type="button" class="tm-sys-btn" data-url="https://jamesfriend.com.au/pce-js/system6/" data-label="Mac Plus · System 6" onclick="timemachineSelect(this)">Mac Plus — System 6</button>
+            <button type="button" class="tm-sys-btn" data-url="https://jamesfriend.com.au/pce-js/mecc/oregon-trail.html" data-label="Mac Plus · Oregon Trail" onclick="timemachineSelect(this)">The Oregon Trail</button>
+            <button type="button" class="tm-sys-btn" data-url="https://jamesfriend.com.au/pce-js/macplus-darkcastle/" data-label="Mac Plus · Dark Castle" onclick="timemachineSelect(this)">Dark Castle</button>
+            <button type="button" class="tm-sys-btn" data-url="https://jamesfriend.com.au/pce-js/mobile/" data-label="Mac Plus · lighter build" onclick="timemachineSelect(this)">Mac Plus — older devices</button>
+            <button type="button" class="tm-sys-btn" data-url="https://jamesfriend.com.au/projects/basiliskii/BasiliskII-worker.html" data-label="Basilisk II" onclick="timemachineSelect(this)">Basilisk II</button>
+            <button type="button" class="tm-sys-btn" data-url="https://jamesfriend.com.au/pce-js/ibmpc-games/" data-label="IBM PC · games" onclick="timemachineSelect(this)">IBM PC — games</button>
+            <button type="button" class="tm-sys-btn" data-url="https://jamesfriend.com.au/pce-js/ibmpc-win/" data-label="IBM PC · Windows 3.0" onclick="timemachineSelect(this)">IBM PC — Windows 3.0</button>
+            <button type="button" class="tm-sys-btn" data-url="https://jamesfriend.com.au/pce-js/atari-st/" data-label="Atari ST" onclick="timemachineSelect(this)">Atari ST</button>
+          </nav>
+          <div class="timemachine-library-foot" aria-label="Credits">Engines by <a href="https://jamesfriend.com.au/pce-js/" target="_blank" rel="noopener noreferrer">James Friend</a> · Source <a href="https://github.com/jsdf/pce" target="_blank" rel="noopener noreferrer">jsdf/pce</a> (GPL-2.0)</div>
+        </div>
+        <div class="timemachine-runner" id="timemachine-runner" aria-hidden="true" style="display:none">
+          <div class="timemachine-viewport" id="timemachine-viewport">
+            <div class="tm-float-controls">
+              <button type="button" class="tm-back-library" onclick="timemachineBackToLibrary()">← Library</button>
+              <span id="timemachine-runner-title" aria-live="polite"></span>
+            </div>
+            <div id="timemachine-frame-shell">
+              <iframe id="timemachine-frame"
+                title="Classic system emulator"
+                allow="fullscreen; autoplay"
+                referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+            <div class="tm-float-attrib" aria-label="Credits">Engines <a href="https://jamesfriend.com.au/pce-js/" target="_blank" rel="noopener noreferrer">James Friend</a> · <a href="https://github.com/jsdf/pce" target="_blank" rel="noopener noreferrer">PCE.js (GPL)</a></div>
+          </div>
+        </div>
+      </div>
+    `
+  });
+}
+
 function openCredits() {
   const id = 'credits-sheet';
   if (document.getElementById(id)) {
@@ -2660,6 +3115,12 @@ function openCredits() {
         <h3>Design inspiration</h3>
         <p><strong><a href="https://ryo.lu" target="_blank" rel="noopener noreferrer">Ryo Lu</a></strong> — head designer at Cursor; <a href="https://ryo.lu" target="_blank" rel="noopener noreferrer">ryo.lu</a> inspired this site's direction.</p>
         <p><strong><a href="https://bychudy.com" target="_blank" rel="noopener noreferrer">bychudy.com</a></strong> — also inspired this project.</p>
+
+        <h3>Classic emulation (PCE.js)</h3>
+        <p><strong>Time Machine</strong> loads in-browser demos from <strong>James Friend</strong>'s
+        <a href="https://jamesfriend.com.au/pce-js/" target="_blank" rel="noopener noreferrer">PCE.js</a>
+        (a port of Hampa Hug's <a href="http://www.hampa.ch/pce/" target="_blank" rel="noopener noreferrer">PCE</a> emulator).
+        Source code: <a href="https://github.com/jsdf/pce" target="_blank" rel="noopener noreferrer">github.com/jsdf/pce</a> (GPL-2.0).</p>
 
         <p class="muted">Thank you to everyone above for the sounds, craft, and references that made this build more fun to ship.</p>
       </div>
@@ -3789,7 +4250,7 @@ function renderDesktopIcons() {
       ? `<div class="icon-label-row"><span class="icon-priority-dot" title="Featured" aria-hidden="true"></span><div class="icon-label">${p.name}</div></div>`
       : `<div class="icon-label">${p.name}</div>`;
     icon.innerHTML = `
-      <div class="icon-img" style="background:${p.color}">${desktopItemIconMarkup(p)}</div>
+      <div class="icon-img">${desktopItemIconMarkup(p)}</div>
       ${labelHtml}
     `;
     icon.addEventListener('mousedown', e => {
@@ -3828,6 +4289,7 @@ function openDockQuickLink(url) {
 
 document.querySelectorAll('.dock-icon').forEach(icon => {
   icon.addEventListener('click', () => {
+    playUISound('dock');
     icon.classList.add('bouncing');
     setTimeout(() => icon.classList.remove('bouncing'), 1200);
     const dockUrl = icon.dataset.dockUrl;
@@ -3847,6 +4309,7 @@ document.querySelectorAll('.dock-icon').forEach(icon => {
       case 'calculator': openCalculator(); break;
       case 'clock': openClock(); break;
       case 'arcade': openArcade('snake'); break;
+      case 'timemachine': openTimeMachine(); break;
       case 'credits': openCredits(); break;
       case 'photobooth': openPhotoBooth(); break;
       case 'photos': openPhotos(); break;
@@ -3887,6 +4350,7 @@ function toggleMenubarMenu(key, anchor) {
     return;
   }
   closeAllMenus();
+  playUISound('menubarOpen');
   dd.classList.add('open');
   openMbKey = key;
   requestAnimationFrame(() => positionMenubarDropdown(dd, anchor));
@@ -3952,6 +4416,7 @@ function toggleControlCenter(force) {
   const shouldOpen = force !== undefined ? force : !cc.classList.contains('open');
   cc.classList.toggle('open', shouldOpen);
   if (btn) btn.classList.toggle('cc-active', shouldOpen);
+  if (shouldOpen) playUISound('panel');
 }
 
 function openComputer() {
@@ -3993,6 +4458,7 @@ document.getElementById('desktop').addEventListener('contextmenu', e => {
     <div class="ctx-item" onclick="openCalculator()">🔢 Calculator</div>
     <div class="ctx-item" onclick="openClock()">🕐 World Clock</div>
     <div class="ctx-item" onclick="openArcade('snake')">🕹️ Arcade</div>
+    <div class="ctx-item" onclick="openTimeMachine()">🕰️ Time Machine</div>
     <div class="ctx-separator"></div>
     <div class="ctx-item" onclick="changeWallpaper()">🎨 Change Wallpaper</div>
   `;
@@ -4023,6 +4489,7 @@ const WALLPAPER_GRADIENTS = [
 let wallpaperIdx = 0;
 const wallpaperTotal = 1 + WALLPAPER_GRADIENTS.length;
 function changeWallpaper() {
+  playUISound('wall');
   wallpaperIdx = (wallpaperIdx + 1) % wallpaperTotal;
   const d = document.getElementById('desktop');
   if (wallpaperIdx === 0) {
@@ -4048,9 +4515,57 @@ document.getElementById('desktop').addEventListener('click', e => {
 /* ============================================================
    INIT
    ============================================================ */
+
+
+function wireGlobalUISounds() {
+  if (document.documentElement.dataset.samOsUiSounds === '1') return;
+  document.documentElement.dataset.samOsUiSounds = '1';
+  document.addEventListener(
+    'click',
+    function samOsUiSoundsCapture(e) {
+      const mb = e.target.closest('.mb-dd-item');
+      if (mb && !mb.classList.contains('muted')) {
+        playUISound('menuPick');
+        return;
+      }
+      const cx = e.target.closest('.ctx-item');
+      if (cx) playUISound('menuPick');
+
+      const ccToggle = e.target.closest('.cc-toggle');
+      if (ccToggle && e.target.closest('#control-center')) {
+        playUISound('tap');
+      }
+    },
+    true
+  );
+
+  const desk = document.getElementById('desktop');
+  if (!desk || desk.dataset.samDeskSounds === '1') return;
+  desk.dataset.samDeskSounds = '1';
+  desk.addEventListener('click', e => {
+    if (e.target.closest('#arcade')) return;
+    const nav = e.target.closest('.nav-btn');
+    if (nav && !nav.disabled) {
+      playUISound('tap');
+      return;
+    }
+    if (e.target.closest('.go-btn')) return void playUISound('tap');
+    if (e.target.closest('.retro-push')) return void playUISound('tap');
+    if (e.target.closest('.calc-btn')) return void playUISound('menuPick');
+
+    const b = e.target.closest('.finder-file, .pb-filter-tile, .photo-booth-layout button, .photos-thumb, .photos-album');
+    if (b) playUISound('tap');
+
+    if (e.target.closest('.btn:not(.muted)')) playUISound('tap');
+  });
+}
+
+
 renderDesktopIcons();
 initStampPersistence();
 initMenubar();
+wireGlobalUISounds();
+
 updateMenuClock();
 </script>
 </body>
