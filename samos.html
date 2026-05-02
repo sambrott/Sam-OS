@@ -2640,7 +2640,7 @@ function samiumNewTabPageHtml(winId) {
       <h2>Samium</h2>
       <p>The browser for Sam OS — built on WebKit, powered by curiosity</p>
       <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:320px;">
-        ${['forma.cool','overprint.design','sambrott.com','wikipedia.org','example.com'].map(u=>`<button class="btn btn-secondary" style="flex:none;width:auto;padding:0 12px;" onclick="samiumNavigate('https://${u}', ${w})">${u}</button>`).join('')}
+        ${['forma.cool','overprint.design','sambrott.com','wikipedia.org','example.com'].map(u=>`<button class="btn btn-secondary" style="flex:none;width:auto;padding:0 12px;" onclick="samiumOpenLinkPreferNewTab('https://${u}', ${w})">${u}</button>`).join('')}
       </div>
     </div>
   `;
@@ -2797,7 +2797,7 @@ function samiumBookmarksOpenPortalMenu(bar, winId, folderBtn, folderId) {
           window.open(url, '_blank', 'noopener,noreferrer');
         } catch (_) { /* ignore */ }
       } else {
-        samiumNavigate(url, wid);
+        samiumOpenLinkPreferNewTab(url, wid);
       }
     }
     samiumBookmarksCloseMenus();
@@ -2924,6 +2924,14 @@ function samiumNewTab(url, winId = SAMIUM_ID) {
   samiumRenderTabs(winId);
   if (url) samiumNavigate(url, winId);
   else samiumShowNewTabPage(winId);
+}
+
+/** Bookmarks / Open X from OS: reuse an idle New Tab, otherwise add a Samium tab. */
+function samiumOpenLinkPreferNewTab(url, winId = SAMIUM_ID) {
+  const tab = getSamiumActiveTab(winId);
+  const idle = tab && (tab.historyIdx < 0 || !tab.history.length);
+  if (idle) samiumNavigate(url, winId);
+  else samiumNewTab(url, winId);
 }
 
 function samiumSwitchTab(i, winId = SAMIUM_ID) {
@@ -3080,7 +3088,7 @@ function openSamium(initialUrl, openInNewTab, winId = SAMIUM_ID) {
     bringToFront(winId);
     if (!initialUrl) return;
     if (openInNewTab) samiumNewTab(initialUrl, winId);
-    else samiumNavigate(initialUrl, winId);
+    else samiumOpenLinkPreferNewTab(initialUrl, winId);
     return;
   }
 
