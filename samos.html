@@ -744,6 +744,20 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
 }
 .address-bar:focus { border-color: #4a90d9; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1), 0 0 0 2px rgba(74,144,217,0.4); }
 
+.sam-toolbar-privacy {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #444;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.sam-toolbar-privacy input { margin: 0; accent-color: #2d7dd2; cursor: pointer; }
+
 .go-btn {
   width: 44px; height: 22px;
   background: linear-gradient(180deg, #6aacf5, #2d7dd2);
@@ -2087,6 +2101,34 @@ const PHOTOS_ALBUMS = [
 const SAMIUM_ID = 'samium';
 const SAMIUM_SOCIAL_ID = 'samium-social';
 
+/** Hosts that need iframe without sandbox — keep in sync with samiumApplySandbox */
+const SAMIUM_EMBED_PRIVILEGED_HOSTS = new Set([
+  'fruit-world-eight.vercel.app',
+  'wheelspin-rho.vercel.app'
+]);
+
+const SAMIUM_PRIVACY_LS_KEY = 'samiumPrivacyIsolateV1';
+
+function samiumPrivacyIsolateReads() {
+  try { return localStorage.getItem(SAMIUM_PRIVACY_LS_KEY) === '1'; } catch (_) {
+    return false;
+  }
+}
+
+function samiumPrivacyIsolateWrites(on) {
+  try { localStorage.setItem(SAMIUM_PRIVACY_LS_KEY, on ? '1' : '0'); } catch (_) {}
+}
+
+function samiumPrivacyIsolateCheckbox(inp, winId) {
+  const on = !!(inp && inp.checked);
+  samiumPrivacyIsolateWrites(on);
+  const wid = typeof winId === 'string' ? winId : String(winId ?? SAMIUM_ID);
+  const tab = getSamiumActiveTab(wid);
+  if (document.getElementById(wid) && tab && tab.historyIdx >= 0 && tab.history.length && tab.history[tab.historyIdx]) {
+    samiumRefresh(wid);
+  }
+}
+
 /**
  * Samium bookmark bar — sourced from DESKTOP_ITEMS where possible so microsites stay in sync.
  * Order: Projects (featured / red-dot items) → Microsites (other web desktops) → Social → Misc.
@@ -2616,6 +2658,12 @@ function samiumWindowInnerHtml(winId) {
         <input class="address-bar sam-url" type="text" value="" placeholder="Enter URL or search…"
           onkeydown="if(event.key==='Enter')samiumGo(${w})" />
         <button type="button" class="go-btn" onclick="samiumGo(${w})">Go</button>
+        <label class="sam-toolbar-privacy" title="Does not strip ads embedded in websites (iframes cannot be modified cross-origin — use uBlock Origin in Safari/Chrome outside Sam OS for that). Enables credentialless iframe mode where supported: partitioned third‑party credentials can reduce some trackers and personalised ad payloads; banking / login flows may break.">
+          <input type="checkbox" class="sam-privacy-cb"
+            ${samiumPrivacyIsolateReads() ? 'checked' : ''}
+            aria-label="Stricter iframe isolation" />
+          Stricter iframe
+        </label>
       </div>
       <div class="browser-bookmarks" role="toolbar" aria-label="Bookmarks">${samiumBookmarksBarHtml()}</div>
       <div class="browser-loading sam-loading"></div>
@@ -2765,6 +2813,14 @@ function samiumBookmarksOpenPortalMenu(bar, winId, folderBtn, folderId) {
   bar.querySelectorAll('.browser-bm-folder-btn').forEach(b => {
     b.setAttribute('aria-expanded', b === folderBtn ? 'true' : 'false');
   });
+}
+
+function samiumWirePrivacyToggle(winId) {
+  const inp = samiumQ(winId, '.sam-privacy-cb');
+  if (!inp || inp.dataset.samPrivacyWired === '1') return;
+  inp.dataset.samPrivacyWired = '1';
+  inp.checked = samiumPrivacyIsolateReads();
+  inp.addEventListener('change', () => samiumPrivacyIsolateCheckbox(inp, winId));
 }
 
 function samiumWireBookmarks(winId) {
@@ -2919,30 +2975,45 @@ function normalizeSamiumUrl(raw) {
   return url;
 }
 
+/** iframe embed sandbox mode — drives isolation hints */
 function samiumApplySandbox(iframe, url) {
   iframe.removeAttribute('allow');
   iframe.removeAttribute('allowfullscreen');
   try {
     const u = new URL(url);
     const h = u.hostname.replace(/^www\./i, '').toLowerCase();
-    const samiumPrivilegedEmbedHosts = new Set([
-      'fruit-world-eight.vercel.app',
-      'wheelspin-rho.vercel.app'
-    ]);
-    if (samiumPrivilegedEmbedHosts.has(h)) {
+    if (SAMIUM_EMBED_PRIVILEGED_HOSTS.has(h)) {
       iframe.removeAttribute('sandbox');
       iframe.setAttribute('allowfullscreen', '');
       iframe.setAttribute('allow',
         'accelerometer; gyroscope; magnetometer; fullscreen; autoplay; encrypted-media; xr-spatial-tracking; pointer-lock; clipboard-read; clipboard-write');
-      return;
+      return 'privileged';
     }
   } catch (e) { /* noop */ }
-  const isYtEmbed = /youtube\.com\/embed/i.test(url);
-  if (isYtEmbed) {
+  if (/youtube\.com\/embed/i.test(url)) {
     iframe.removeAttribute('sandbox');
-    return;
+    return 'youtube';
   }
   iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-presentation');
+  return 'sandboxed';
+}
+
+function samiumApplyIframeIsolationHints(iframe, _url, sandboxKind) {
+  try {
+    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+  } catch (_) { /* noop */ }
+
+  const useCredless = sandboxKind === 'sandboxed'
+    && samiumPrivacyIsolateReads()
+    && typeof iframe.credentialless !== 'undefined';
+  try {
+    if (useCredless) {
+      iframe.credentialless = true;
+    } else {
+      iframe.credentialless = false;
+      iframe.removeAttribute('credentialless');
+    }
+  } catch (_) { /* noop */ }
 }
 
 function samiumLoadUrlIntoBody(url, pushHistory, winId = SAMIUM_ID) {
@@ -2975,7 +3046,8 @@ function samiumLoadUrlIntoBody(url, pushHistory, winId = SAMIUM_ID) {
   const iframe = document.createElement('iframe');
   iframe.className = 'browser-iframe';
   iframe.title = 'Samium frame';
-  samiumApplySandbox(iframe, url);
+  const sandboxKind = samiumApplySandbox(iframe, url);
+  samiumApplyIframeIsolationHints(iframe, url, sandboxKind);
   iframe.src = url;
   const fallback = document.createElement('div');
   fallback.style.cssText = 'display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;background:#f0f0f0;padding:20px;text-align:center;font-size:13px;color:#555;gap:12px;';
@@ -3027,6 +3099,7 @@ function openSamium(initialUrl, openInNewTab, winId = SAMIUM_ID) {
   st.activeTabIndex = 0;
   samiumWireTabStrip(winId);
   samiumWireBookmarks(winId);
+  samiumWirePrivacyToggle(winId);
   samiumEnsurePanelForTab(winId, 0);
   samiumSyncPanelVisibility(winId);
   samiumRenderTabs(winId);
