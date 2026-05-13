@@ -1734,6 +1734,47 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
 .finder-file.hidden { display: none !important; }
 
 #mb-cc-toggle.cc-active { background: rgba(0,0,0,0.15); }
+
+/* ===================== AURORA IN-BROWSER SCREENSAVER ===================== */
+#sam-aurora-screensaver {
+  display: none;
+  position: fixed;
+  inset: 22px 0 0 0;
+  z-index: 99996;
+  background: #000;
+  outline: none;
+}
+#sam-aurora-screensaver.sam-aurora-on {
+  display: block;
+}
+#sam-aurora-screensaver .sam-aurora-if {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #000;
+  pointer-events: none;
+}
+#sam-aurora-screensaver .sam-aurora-wake-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  cursor: default;
+  background: transparent;
+}
+#sam-aurora-screensaver .sam-aurora-wake-hint {
+  position: absolute;
+  left: 0; right: 0; bottom: 12px;
+  z-index: 3;
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.45);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  pointer-events: none;
+  user-select: none;
+}
 </style>
 </head>
 <body>
@@ -1840,6 +1881,11 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
       <div class="dock-dot" style="display:none"></div>
       <div class="dock-tooltip">Arcade</div>
     </div>
+    <div class="dock-icon" data-app="aurora" title="Aurora">
+      <div class="dock-icon-img">🌌</div>
+      <div class="dock-dot" style="display:none"></div>
+      <div class="dock-tooltip">Aurora</div>
+    </div>
     <div class="dock-icon" data-app="timemachine" title="Time Machine">
       <div class="dock-icon-img">🕰️</div>
       <div class="dock-dot" style="display:none"></div>
@@ -1876,6 +1922,13 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: -apple-sy
     </div>
   </div>
 
+</div>
+
+<!-- Aurora: full-desktop overlay after 60s idle; wake on mouse/keyboard -->
+<div id="sam-aurora-screensaver" class="sam-aurora-screensaver" hidden tabindex="-1" aria-hidden="true">
+  <iframe class="sam-aurora-if" id="sam-aurora-iframe" title="Aurora screen saver"></iframe>
+  <div class="sam-aurora-wake-layer" id="sam-aurora-glass"></div>
+  <div class="sam-aurora-wake-hint">Move mouse or press any key to wake Sam OS</div>
 </div>
 
 <!-- CONTEXT MENU -->
@@ -2026,6 +2079,18 @@ const DESKTOP_ITEMS = [
     url: 'https://wheelspin-rho.vercel.app/'
   },
   {
+    id: 'aurora-screensaver',
+    name: 'Aurora',
+    emoji: '🌌',
+    color: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 45%, #a855f7 100%)',
+    type: 'Screen saver',
+    tags: ['WebGL', 'GitHub: aurora-screensaver'],
+    finderTerms: 'aurora ambient screensaver webgl gradient',
+    desc: 'Aurora ambient loop inside Sam OS (also runs after idle). Source: github.com/sambrott/aurora-screensaver.',
+    action: 'samium',
+    url: ''
+  },
+  {
     id: 'portfolio',
     name: 'Portfolio',
     emoji: '💼',
@@ -2039,6 +2104,13 @@ const DESKTOP_ITEMS = [
     priority: true
   }
 ];
+
+(function samOsPatchAuroraUrl() {
+  const a = DESKTOP_ITEMS.find(x => x.id === 'aurora-screensaver');
+  if (!a) return;
+  try { a.url = new URL('aurora/index.html', window.location.href).href; }
+  catch (_) { a.url = 'aurora/index.html'; }
+})();
 
 function desktopItemIconMarkup(p) {
   return p.iconHtml != null ? p.iconHtml : p.emoji;
@@ -4782,6 +4854,7 @@ document.querySelectorAll('.dock-icon').forEach(icon => {
       case 'calculator': openCalculator(); break;
       case 'clock': openClock(); break;
       case 'arcade': openArcade('snake'); break;
+      case 'aurora': samAuraShowFromDock(); break;
       case 'timemachine': openTimeMachine(); break;
       case 'credits': openCredits(); break;
       case 'photobooth': openPhotoBooth(); break;
@@ -4857,6 +4930,7 @@ function initMenubar() {
   `;
   document.getElementById('mb-dropdown-go').innerHTML = `
     <div class="mb-dd-item" onclick="closeAllMenus();openComputer();">🏠 Home / Portfolio</div>
+    <div class="mb-dd-item" onclick="closeAllMenus();samAuraShowFromDock();">🌌 Aurora Screen Saver</div>
     <div class="mb-dd-item" onclick="closeAllMenus();openPhotos();">🖼️ Photos</div>
     <div class="mb-dd-item" onclick="closeAllMenus();openSamium('https://www.youtube.com');">🎬 YouTube</div>
   `;
@@ -4997,9 +5071,111 @@ document.getElementById('desktop').addEventListener('click', e => {
 });
 
 /* ============================================================
-   INIT
+   AURORA IN-BROWSER SCREENSAVER — 60s idle, dock + Samium bookmarks
    ============================================================ */
+const SAM_AURA_IDLE_MS = 60 * 1000;
+let samAuraIdleTimer = null;
+let samAuraActive = false;
 
+function samAuroraBaseUrl() {
+  try {
+    return new URL('aurora/index.html', window.location.href).href;
+  } catch (_) {
+    return 'aurora/index.html';
+  }
+}
+
+function samAuraBumpActivity() {
+  if (samAuraActive) return;
+  clearTimeout(samAuraIdleTimer);
+  samAuraIdleTimer = setTimeout(samAuraShowFromIdle, SAM_AURA_IDLE_MS);
+}
+
+function samAuraWakeFromGlass() {
+  if (!samAuraActive) return;
+  samAuraWake('glass');
+}
+
+function samAuraWake(reason) {
+  if (!samAuraActive) return;
+  void reason;
+  samAuraActive = false;
+  clearTimeout(samAuraIdleTimer);
+  const shell = document.getElementById('sam-aurora-screensaver');
+  const iframe = document.getElementById('sam-aurora-iframe');
+  const glass = document.getElementById('sam-aurora-glass');
+  if (glass) {
+    glass.removeEventListener('pointermove', samAuraWakeFromGlass);
+    glass.removeEventListener('pointerdown', samAuraWakeFromGlass);
+    glass.removeEventListener('touchstart', samAuraWakeFromGlass);
+    glass.removeEventListener('wheel', samAuraWakeFromGlass);
+  }
+  if (iframe) {
+    iframe.removeAttribute('src');
+    iframe.src = 'about:blank';
+  }
+  if (shell) {
+    shell.classList.remove('sam-aurora-on');
+    shell.hidden = true;
+    shell.setAttribute('aria-hidden', 'true');
+  }
+  try { shell?.blur?.(); document.body.focus?.(); } catch (_) {}
+  document.removeEventListener('keydown', samAuraOnKeyWake, true);
+  samAuraBumpActivity();
+}
+
+function samAuraShowFromDock() {
+  clearTimeout(samAuraIdleTimer);
+  samAuraShow(true);
+}
+
+function samAuraShowFromIdle() {
+  samAuraShow(false);
+}
+
+function samAuraShow(fromDockOpen) {
+  const shell = document.getElementById('sam-aurora-screensaver');
+  const iframe = document.getElementById('sam-aurora-iframe');
+  if (!shell || !iframe) return;
+  samAuraActive = true;
+  clearTimeout(samAuraIdleTimer);
+  const u = samAuroraBaseUrl();
+  iframe.src = u + (u.includes('?') ? '&' : '?') + 'sam=os' + (fromDockOpen ? '&launch=dock' : '&launch=idle');
+  shell.hidden = false;
+  shell.removeAttribute('hidden');
+  shell.classList.add('sam-aurora-on');
+  shell.setAttribute('aria-hidden', 'false');
+  try { shell.focus({ preventScroll: true }); } catch (_) { shell.focus(); }
+  document.addEventListener('keydown', samAuraOnKeyWake, true);
+
+  const glass = document.getElementById('sam-aurora-glass');
+  if (glass) {
+    glass.addEventListener('pointermove', samAuraWakeFromGlass, { passive: true });
+    glass.addEventListener('pointerdown', samAuraWakeFromGlass, { passive: true });
+    glass.addEventListener('touchstart', samAuraWakeFromGlass, { passive: true });
+    glass.addEventListener('wheel', samAuraWakeFromGlass, { passive: true });
+  }
+}
+
+function samAuraOnKeyWake(e) {
+  if (!samAuraActive) return;
+  samAuraWake('keydown:' + e.key);
+}
+
+function initSamAuraScreensaver() {
+  samAuraBumpActivity();
+  ['pointerdown', 'pointermove', 'mousedown', 'wheel', 'touchstart'].forEach(evt => {
+    document.addEventListener(evt, samAuraBumpActivity, { passive: true, capture: false });
+  });
+  document.addEventListener('keydown', samAuraBumpActivity, { passive: true });
+  document.addEventListener('keydown', samAuraBumpActivityControl, false);
+}
+
+function samAuraBumpActivityControl(e) {
+  if (!e.key || samAuraActive) return;
+  if (e.repeat) return;
+  samAuraBumpActivity();
+}
 
 function wireGlobalUISounds() {
   if (document.documentElement.dataset.samOsUiSounds === '1') return;
@@ -5048,6 +5224,7 @@ function wireGlobalUISounds() {
 renderDesktopIcons();
 initStampPersistence();
 initMenubar();
+initSamAuraScreensaver();
 wireGlobalUISounds();
 
 updateMenuClock();
