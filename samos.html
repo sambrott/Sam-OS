@@ -2160,6 +2160,7 @@ const PHOTOS_ALL_SORTED = [
   'photos/IMG_9177.JPG',
   'photos/IMG_9178.JPG',
   'photos/IMG_9180.JPG',
+  'photos/IMG_112022_brew.jpg',
 ];
 
 const PHOTOS_ALBUMS = [
@@ -2167,7 +2168,11 @@ const PHOTOS_ALBUMS = [
   { id: 'archive', name: 'Archive', photos: [] },
   { id: 'experiments', name: 'Experiments', photos: [] },
   { id: 'food', name: 'Food', photos: [] },
-  { id: 'travel', name: 'Travel', photos: [] }
+  {
+    id: 'travel',
+    name: 'Travel',
+    photos: ['photos/IMG_112022_brew.jpg']
+  }
 ];
 
 const SAMIUM_ID = 'samium';
@@ -4026,11 +4031,16 @@ function startArcadePong() {
 
 
 const PB_EFFECTS = [
-  { id: 'vintage', name: 'Sepia booth' },
+  { id: 'none', name: 'Normal' },
+  { id: 'vintage', name: 'Vintage' },
+  { id: 'flash', name: 'Party flash' },
+  { id: 'grain', name: 'Film grain' },
+  { id: 'crt', name: 'CRT night' },
+  { id: 'neon', name: 'Neon pop' },
+  { id: 'moon', name: 'Moon teal' },
   { id: 'pixel', name: 'Mega pixel' },
   { id: 'rgb', name: 'RGB glitch' },
   { id: 'mirror', name: 'Twin mirror' },
-  { id: 'none', name: 'Normal' },
   { id: 'acid', name: 'Acid trip' },
   { id: 'thermal', name: 'Alien heat' },
   { id: 'invert', name: 'X-Ray' },
@@ -4126,6 +4136,66 @@ function applyPbKaleido(ctx, video, ow, oh, vw, vh) {
   ctx.restore();
 }
 
+function applyPbGrain(ctx, w, h, strength) {
+  const s = typeof strength === 'number' ? strength : 13;
+  const img = ctx.getImageData(0, 0, w, h);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const g = (Math.random() - 0.5) * s;
+    d[i] = Math.max(0, Math.min(255, d[i] + g));
+    d[i + 1] = Math.max(0, Math.min(255, d[i + 1] + g));
+    d[i + 2] = Math.max(0, Math.min(255, d[i + 2] + g));
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+function applyPbPartyFlashGlow(ctx, w, h) {
+  ctx.save();
+  const g = ctx.createRadialGradient(w * 0.54, h * 0.24, Math.min(w, h) * 0.05, w * 0.5, h * 0.54, Math.hypot(w, h) * 0.65);
+  g.addColorStop(0, 'rgba(255,246,236,0.48)');
+  g.addColorStop(0.72, 'rgba(255,228,206,0.08)');
+  g.addColorStop(1, 'rgba(42,26,74,0.52)');
+  ctx.globalCompositeOperation = 'soft-light';
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+  ctx.restore();
+}
+
+function applyPbWarmVignette(ctx, w, h) {
+  ctx.save();
+  const g = ctx.createRadialGradient(w * 0.5, h * 0.5, Math.min(w, h) * 0.08, w * 0.5, h * 0.5, Math.hypot(w, h) * 0.75);
+  g.addColorStop(0, 'rgba(255,255,255,0)');
+  g.addColorStop(0.75, 'rgba(14,12,54,0.2)');
+  g.addColorStop(1, 'rgba(8,6,42,0.58)');
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+  ctx.restore();
+}
+
+function applyPbCrtScanlines(ctx, w, h, acidT) {
+  const offs = (((acidT / 22) % 6) + 6) % 6;
+  ctx.save();
+  ctx.globalCompositeOperation = 'multiply';
+  for (let y = -offs; y < h + 14; y += 3) {
+    ctx.fillStyle = ((((y >> 3) ^ (w >> 2)) & 1) ? 'rgba(0,0,0,0.19)' : 'rgba(250,246,236,0.028)');
+    ctx.fillRect(0, y + 2, w, 1);
+  }
+  ctx.restore();
+}
+
+function applyPbMoonGlow(ctx, w, h) {
+  ctx.save();
+  const g = ctx.createRadialGradient(w * 0.46, h * 0.6, 40, w * 0.5, h * 0.52, Math.hypot(w, h) * 0.78);
+  g.addColorStop(0, 'rgba(174,229,246,0.14)');
+  g.addColorStop(0.82, 'rgba(30,78,138,0.2)');
+  g.addColorStop(1, 'rgba(14,41,71,0.44)');
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+  ctx.restore();
+}
+
 const PB_TILE_W = 200;
 const PB_TILE_H = 150;
 
@@ -4161,7 +4231,10 @@ function renderPbFrame(ctx, video, eff, acidT) {
         ? pbState.acidHueLockTs
         : acidT;
       ctx.filter = `hue-rotate(${(t / 18) % 360}deg) saturate(2)`;
-    }
+    } else if (eff === 'flash') ctx.filter = 'brightness(1.22) contrast(1.42) saturate(1.06)';
+    else if (eff === 'neon') ctx.filter = 'saturate(2.1) hue-rotate(285deg) contrast(1.1) brightness(1.06)';
+    else if (eff === 'moon') ctx.filter = 'brightness(1.06) contrast(1.1) saturate(1.1) hue-rotate(174deg)';
+    else if (eff === 'crt') ctx.filter = 'contrast(1.16) saturate(1.52) brightness(0.92)';
     else ctx.filter = 'none';
     ctx.drawImage(video, 0, 0, vw, vh, 0, 0, ow, oh);
     ctx.restore();
@@ -4171,6 +4244,13 @@ function renderPbFrame(ctx, video, eff, acidT) {
   }
 
   ctx.restore();
+
+  if (eff === 'grain') applyPbGrain(ctx, ow, oh);
+  else if (eff === 'crt') {
+    applyPbCrtScanlines(ctx, ow, oh, acidT);
+    applyPbWarmVignette(ctx, ow, oh);
+  } else if (eff === 'flash') applyPbPartyFlashGlow(ctx, ow, oh);
+  else if (eff === 'moon') applyPbMoonGlow(ctx, ow, oh);
 }
 
 function pbLoop() {
